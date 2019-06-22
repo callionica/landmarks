@@ -7,12 +7,12 @@ Landmarks is a complete, standalone implementation of a markup language parser u
 
 Landmarks is not a wrapper for any other library and its code is not based on any other parser.
 
-Landmarks' implementation is informed by the HTML5 specification, making it an ideal choice to quickly extract information from HTML documents. However, Landmarks is deliberately not an HTML5-conformant parser. Landmarks does not execute script in the documents that it parses, it does not implement some of the more esoteric behavior of HTML5 parsers that web standards committees demand for compatibility, and it preserves more information from the source document in some cases where HTML browsers obscure the true structure of the input.
+Landmarks' implementation is informed by the HTML5 specification, making it an ideal choice to quickly extract information from HTML documents. However, Landmarks is deliberately not an HTML5-conformant parser. Landmarks does not execute script in the documents that it parses, it does not implement some of the more esoteric behavior of HTML5 parsers that web standards committees demand for compatibility, and it preserves more information from the source document in some cases where HTML browsers obscure the true structure of the input. Despite full fidelity to the HTML spec being a non-goal, you may find that Landmarks is more conformant than your existing HTML parser, and you will surely find that it is more flexible, adaptable, and understandable.
 
 The Landmarks parser supports the following features:
 
 ## 1. Content can contain < and >
-HTML and Landmarks can interpret angle brackets as literal text depending on context. XML parsers cannot.
+HTML and Landmarks can interpret angle brackets as literal text depending on context. Landmarks even lets you customize this. XML parsers cannot interpret angle brackets as literal text.
 
 ## 2. Attributes do not have to have values
 HTML and Landmarks do not require each attribute to have a value. XML parsers do require attribute values.
@@ -33,7 +33,7 @@ Landmarks supports attributes on closing tags and delivers that info to the appl
 Landmarks supports multiple attributes with the same name on a single element and delivers that info to the application. HTML ignores subsequent attributes that have the same name as an earlier attribute. XML does not support duplicate attributes.
 
 ## 8. Void elements
-HTML says that certain specific elements can never contain content and that a start tag `<X>` must be treated as a self-closing element `<X/>` even if the slash is missing. Landmarks supports this feature and allows you to customize which elements are treated this way. XML does not have this feature.
+HTML says that certain specific elements can never contain content and that a start tag `<X>` must be treated as a self-closing element `<X/>`. Landmarks supports this feature and allows you to customize which elements are treated this way. XML does not have this feature.
 
 ## 9. Content elements
 HTML says that certain specific elements must always contain content and that a self-closing element `<X/>` must instead be treated as a start tag `<X>`. Landmarks supports this feature and allows you to customize which elements are treated this way. XML does not have this feature.
@@ -53,4 +53,14 @@ Landmarks allows you to customize elements such that when they are closed, the p
 ## 14. Automatching end tags
 Landmarks allows you to control whether an end tag seen by the parser is an automatching end tag, meaning that it will match the start tag of any open element. Neither HTML nor XML has this feature.
 
+## 15. Case sensitivity
+HTML matches tags using ASCII case-insensitive comparisons. XML tags are always case-sensitive. Landmarks, like HTML, uses ASCII case-insensitivity by default, but this can be configured.
 
+
+# Use Cases
+
+## 1. Data extraction from partial documents
+
+You can truncate the input document at any point and feed the first part of the document in to the Landmarks parser to get useful information about that part of the document. Landmarks doesn't contain any extraneous validation that will get in the way of extracting useful information from partial documents. For example, if you know that the data you seek is in the `<head>` of the document and it must come in the first 16K of the document, just truncate the input and avoid parsing unused data.
+
+## 2. Error correction - 
