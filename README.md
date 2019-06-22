@@ -53,7 +53,7 @@ Landmarks allows you to customize elements such that when they are closed, the p
 ## 14. Automatching end tags
 Landmarks allows you to control whether an end tag seen by the parser is an automatching end tag, meaning that it will match the start tag of any open element. Neither HTML nor XML has this feature.
 
-## 15. Case sensitivity
+## 15. Case sensitivity optional
 HTML matches tags using ASCII case-insensitive comparisons. XML tags are always case-sensitive. Landmarks, like HTML, uses ASCII case-insensitivity by default, but this can be configured.
 
 
