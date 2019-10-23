@@ -17,5 +17,5 @@ export interface LandmarksHandler {
     seen_end_tag_attribute(document : string, attribute : LandmarksAttribute) : void;
     seen_end_tag(document : string, tag : LandmarksEndTag) : void;
 
-    seen_eof(document : string, open_elements : TagID[]) : void;
+    seen_eof(document : string, open_elements : readonly TagID[]) : void;
 };

@@ -113,7 +113,7 @@ export function LandmarksParser(document : string, policy : LandmarksPolicy, han
         handler.seen_end_tag(document, tag);
     }
     
-    function seen_eof(open_elements: TagID[]) {
+    function seen_eof(open_elements: readonly TagID[]) {
         handler.seen_eof(document, open_elements);
     }
     
