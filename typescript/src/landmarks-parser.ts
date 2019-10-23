@@ -3,6 +3,8 @@ import { LandmarksPosition, npos, LandmarksRange, LandmarksStartTagPrefix, Landm
 import { LandmarksHandler } from "./landmarks-handler"
 import { LandmarksPolicy } from "./landmarks-policy"
 
+type AttributeCallback = (attr: LandmarksAttribute) => void;
+
 // Define some constants and functions to make it easier to convert C++ code
 
 function find(text : string, term : string, position : LandmarksPosition = 0) {
@@ -115,7 +117,7 @@ export function LandmarksParser(document : string, policy : LandmarksPolicy, han
     
     /////
 
-    function parseAttributes(position : LandmarksPosition, callback) {
+    function parseAttributes(position : LandmarksPosition, callback : AttributeCallback) {
         let attribute_spaces = constants.attribute_spaces;
         let close_choices = constants.close_choices;
         let close = constants.close;
@@ -123,7 +125,7 @@ export function LandmarksParser(document : string, policy : LandmarksPolicy, han
         let attribute_value_end = constants.attribute_value_end;
 
         var search_position : LandmarksPosition = position;
-        var attr : LandmarksAttribute = null;
+        var attr : LandmarksAttribute | null = null;
 
         while (search_position < length) {
             
@@ -312,9 +314,7 @@ export function LandmarksParser(document : string, policy : LandmarksPolicy, han
                     
                     seen_start_tag_prefix(tag);
 
-                    search_position = parseAttributes(end_name, (attr)=>{
-                        this.seen_start_tag_attribute(attr);
-                    });
+                    search_position = parseAttributes(end_name, seen_start_tag_attribute);
                     
                     if (policy.is_void_element(tagID)){
                         tag.self_closing_policy = SelfClosingPolicy.required;
@@ -441,9 +441,7 @@ export function LandmarksParser(document : string, policy : LandmarksPolicy, han
                 
                 seen_end_tag_prefix(endTag);
 
-                search_position = parseAttributes(end_name, (attr)=>{
-                    this.seen_end_tag_attribute(attr);
-                });
+                search_position = parseAttributes(end_name, seen_end_tag_attribute);
                 
                 var end = findEnd(close, search_position);
                 

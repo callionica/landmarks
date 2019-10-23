@@ -41,8 +41,8 @@ export function is_self_closing(marker : SelfClosingMarker, policy : SelfClosin
 export class LandmarksRange {
     start: LandmarksPosition;
     end: LandmarksPosition;
-    
-    constructor(start: LandmarksPosition, end: LandmarksPosition) {
+
+    constructor(start: LandmarksPosition = npos, end: LandmarksPosition = npos) {
         this.start = start; this.end = end;
     };
 
@@ -74,9 +74,9 @@ export class LandmarksAttribute {
 export type TagID = string;
 
 export class LandmarksTagPrefix {
-    tagID: TagID;
-    name: LandmarksRange;
-    all: LandmarksRange;
+    tagID: TagID = "";
+    name: LandmarksRange = new LandmarksRange();
+    all: LandmarksRange = new LandmarksRange();;
 };
 
 export class LandmarksStartTagPrefix extends LandmarksTagPrefix {
