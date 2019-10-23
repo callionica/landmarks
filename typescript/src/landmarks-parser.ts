@@ -70,51 +70,51 @@ export function LandmarksParser(document : string, policy : LandmarksPolicy, han
 
     //////
     function seen_text(rng : LandmarksRange) {
-        handler.seen_text(document, rng);
+        handler.Text(document, rng);
     }
     
     function seen_comment(rng : LandmarksRange) {
-        handler.seen_comment(document, rng);
+        handler.Comment(document, rng);
     }
     
     function seen_cdata(rng : LandmarksRange) {
-        handler.seen_cdata(document, rng);
+        handler.CData(document, rng);
     }
     
     function seen_processing(rng : LandmarksRange) {
-        handler.seen_processing(document, rng);
+        handler.Processing(document, rng);
     }
     
     function seen_declaration(rng : LandmarksRange) {
-        handler.seen_declaration(document, rng);
+        handler.Declaration(document, rng);
     }
     
     function seen_start_tag_prefix(tag : LandmarksStartTagPrefix) {
-        handler.seen_start_tag_prefix(document, tag);
+        handler.StartTagPrefix(document, tag);
     }
     
     function seen_start_tag_attribute(attr : LandmarksAttribute) {
-        handler.seen_start_tag_attribute(document, attr);
+        handler.StartTagAttribute(document, attr);
     }
     
     function seen_end_tag_attribute(attr : LandmarksAttribute) {
-        handler.seen_end_tag_attribute(document, attr);
+        handler.EndTagAttribute(document, attr);
     }
     
     function seen_start_tag(tag : LandmarksStartTag) {
-        handler.seen_start_tag(document, tag);
+        handler.StartTag(document, tag);
     }
     
     function seen_end_tag_prefix(tag : LandmarksEndTagPrefix) {
-        handler.seen_end_tag_prefix(document, tag);
+        handler.EndTagPrefix(document, tag);
     }
     
     function seen_end_tag(tag : LandmarksEndTag) {
-        handler.seen_end_tag(document, tag);
+        handler.EndTag(document, tag);
     }
     
     function seen_eof(open_elements: readonly TagID[]) {
-        handler.seen_eof(document, open_elements);
+        handler.EOF(document, open_elements);
     }
     
     /////
