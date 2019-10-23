@@ -75,6 +75,7 @@ export interface LandmarksPolicyData {
     AutoclosingEndTags: readonly string[];
     AutocloseByParent: readonly string[];
     AutocloseBySibling: readonly TagAndSiblings[];
+    WildcardEndTags: readonly string[];
 }
 
 export class Policy implements LandmarksPolicy {
@@ -130,7 +131,7 @@ export class Policy implements LandmarksPolicy {
     }
 
     isWildcardEndTag(tagID: TagID): boolean {
-        return false;
+        return this.data.WildcardEndTags.includes(tagID);
     }
 
     isAutoclosingEndTag(tagID: TagID): boolean {
