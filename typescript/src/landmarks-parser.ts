@@ -1,3 +1,5 @@
+// ALL RIGHTS RESERVED
+
 import { LandmarksParserConstants } from "./landmarks-parser-constants";
 import { LandmarksPosition, npos, LandmarksRange, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksStartTag, LandmarksEndTagPrefix, LandmarksEndTag, TagID, EndTagState, SelfClosingPolicy, SelfClosingMarker } from "./landmarks-parser-types";
 import { LandmarksHandler } from "./landmarks-handler"

@@ -1,3 +1,5 @@
+// ALL RIGHTS RESERVED
+
 export type LandmarksPosition = number;
 export const npos : LandmarksPosition = -1;
 

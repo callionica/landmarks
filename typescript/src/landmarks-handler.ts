@@ -1,3 +1,5 @@
+// ALL RIGHTS RESERVED
+
 import { LandmarksRange, LandmarksStartTag, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksEndTagPrefix, LandmarksEndTag, TagID } from "./landmarks-parser-types";
 
 export interface LandmarksHandler {

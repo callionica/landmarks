@@ -1,4 +1,4 @@
-"use strict";
+// ALL RIGHTS RESERVED
 
 export function LandmarksParserConstants() {
     /*

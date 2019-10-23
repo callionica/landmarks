@@ -1,3 +1,5 @@
+// ALL RIGHTS RESERVED
+
 import { TagID, LandmarksPosition } from "./landmarks-parser-types";
 
 // An interface that allows you to get help from the compiler when implementing a Policy used by the Parser
