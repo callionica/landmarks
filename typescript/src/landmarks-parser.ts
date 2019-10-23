@@ -266,7 +266,7 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
             if (choice === open) {
                 // We found '<', but it's not an end tag, comment, cdata, processing, or declaration, so it's either a start tag or text
                 // depending on whether it's followed by a valid element name
-                var start_name_o = policy.get_element_name_start(document, start_position + open.length);
+                var start_name_o = policy.getElementNameStart(document, start_position + open.length);
                 if (start_name_o != npos) {
                     var start_name = start_name_o;
                     var end_name = findFirstOf(document, element_name_end, start_name);
@@ -286,7 +286,7 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
                     }
 
                     var original_element_name = document.substr(start_name, end_name - start_name);
-                    var tagID = policy.get_TagID(original_element_name);
+                    var tagID = policy.getTagID(original_element_name);
 
                     tag.tagID = tagID;
 
@@ -296,7 +296,7 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
                             var open_element = elements[index - 1];
                             // If there is an open element that the current start tag can autoclose,
                             // we close all elements in the stack until we get to the autoclosing sibling
-                            if (policy.is_autoclosing_sibling(open_element, tagID)) {
+                            if (policy.isAutoclosingSibling(open_element, tagID)) {
                                 var count = elements.length - (index - 1);
                                 while (count--) {
                                     var t = back();
@@ -318,9 +318,9 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
 
                     search_position = parseAttributes(end_name, seen_start_tag_attribute);
 
-                    if (policy.is_void_element(tagID)) {
+                    if (policy.isVoidElement(tagID)) {
                         tag.self_closing_policy = SelfClosingPolicy.required;
-                    } else if (policy.is_content_element(tagID)) {
+                    } else if (policy.isContentElement(tagID)) {
                         tag.self_closing_policy = SelfClosingPolicy.prohibited;
                     }
 
@@ -336,19 +336,19 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
                     if (!tag.isSelfClosing) {
                         elements.push(tagID);
 
-                        if (policy.is_opaque_element(tagID)) {
+                        if (policy.isOpaqueElement(tagID)) {
                             // Find end tag without other parsing
                             while (search_position !== npos) {
                                 // Search for the end tag
                                 search_position = findEnd(open_end_tag, search_position);
                                 if (search_position < length) {
-                                    var start_name_o = policy.get_element_name_start(document, search_position);
+                                    var start_name_o = policy.getElementNameStart(document, search_position);
                                     var start_name = (start_name_o != npos) ? start_name_o : search_position;
                                     var end_name = findFirstOf(document, element_name_end, start_name);
                                     var pos = (start_name > length) ? length : start_name;
-                                    var currentID = policy.get_TagID(document.substr(pos, end_name - pos));
+                                    var currentID = policy.getTagID(document.substr(pos, end_name - pos));
 
-                                    if (policy.is_same_element(tagID, currentID)) {
+                                    if (policy.isSameElement(tagID, currentID)) {
                                         /*
                                          We're positioned at the end of the end tag
                                          Back up to the start
@@ -372,7 +372,7 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
                     ++search_position;
                 }
             } else if (choice === open_end_tag) {
-                var start_name_o = policy.get_element_name_start(document, start_position + open_end_tag.length);
+                var start_name_o = policy.getElementNameStart(document, start_position + open_end_tag.length);
                 // REVIEW: Unlike how we treat start tag markup, we don't allow an end tag to ever be interpreted as text
                 var start_name = (start_name_o != npos) ? start_name_o : start_position + open_end_tag.length;
                 if (start_name >= length) {
@@ -381,17 +381,17 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
                 var end_name = findFirstOf(document, element_name_end, start_name);
                 var pos = (start_name > length) ? length : start_name;
                 var el_name = document.substr(pos, end_name - pos);
-                var tagID = policy.get_TagID(el_name);
+                var tagID = policy.getTagID(el_name);
 
                 var end_state = EndTagState.floating;
 
                 if (elements.length > 0) {
                     // If the end tag is a wildcard, it takes on the tag ID of the last open element
-                    if (policy.is_wildcard_end_tag(tagID)) {
+                    if (policy.isWildcardEndTag(tagID)) {
                         tagID = back();
                     }
 
-                    if (policy.is_same_element(tagID, back())) {
+                    if (policy.isSameElement(tagID, back())) {
                         // We've found a matching end tag with no children
                         end_state = EndTagState.matching;
                         elements.pop();
@@ -400,19 +400,19 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
                         // If the close tag is for a landmark and there's a matching open tag on the stack
                         // Or if the stack contains autoclose_by_parent items
                         // Then we need to close them
-                        var landmark = policy.is_autoclosing_end_tag(tagID);
+                        var landmark = policy.isAutoclosingEndTag(tagID);
 
                         var state = landmark ? EndTagState.autoclosedByAncestor : EndTagState.autoclosedByParent;
                         var index = elements.length;
                         for (; index > 0; --index) {
                             var e = elements[index - 1];
-                            var autoclose = policy.is_autoclose_by_parent(e);
+                            var autoclose = policy.isAutocloseByParent(e);
 
-                            if (policy.is_same_element(e, tagID)) {
+                            if (policy.isSameElement(e, tagID)) {
                                 // If we get here, the current end tag is for an open element
                                 // and either all children autoclose when the parent closes
                                 // or the current end tag is a landmark
-                                while (!policy.is_same_element(back(), tagID)) {
+                                while (!policy.isSameElement(back(), tagID)) {
                                     // Close all the autoclosing elements
                                     var endTag = new LandmarksEndTag();
                                     endTag.all = new LandmarksRange(start_position, start_position);
@@ -481,7 +481,7 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
         }
 
         // Close the inner contiguous set of elements that are autoclosed by parent
-        while ((elements.length > 0) && policy.is_autoclose_by_parent(back())) {
+        while ((elements.length > 0) && policy.isAutocloseByParent(back())) {
             // Close all the autoclosing elements
             var endTag = new LandmarksEndTag();
             endTag.all = new LandmarksRange(search_position, search_position);

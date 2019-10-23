@@ -19,51 +19,51 @@ export interface LandmarksPolicy {
     // As a result this function gives you control over whether < is actually treated as the start of a tag or as text.
     // The standard policy just checks the character at pos against A-z 0-9 and returns pos for a match
     // (The policy does not get to decide where the element name ends - that's handled by the parser)
-    get_element_name_start(text: string, pos: LandmarksPosition): LandmarksPosition;
+    getElementNameStart(text: string, pos: LandmarksPosition): LandmarksPosition;
 
     // The policy converts an element's name into a TagID
     // This can be used for normalizing element names to increase the efficiency of the parser
     // For example, you can put case-folding here
     // Constraining the length of TagIDs can be an important protection against malicious input
     // and for controlling memory use since there can be dynamic allocation here.
-    get_TagID(name: string): TagID;
+    getTagID(name: string): TagID;
 
     // Do these two TagIDs represent the same element?
     // If you don't do case-folding in get_TagID, you can put case-sensitivity logic here
-    is_same_element(lhs: TagID, rhs: TagID): boolean;
+    isSameElement(lhs: TagID, rhs: TagID): boolean;
 
     // A "void element" is one where the start tag is always self-closing whether marked or not
     // so <void> and <void/> are both self-closing
-    is_void_element(tagID: TagID): boolean;
+    isVoidElement(tagID: TagID): boolean;
 
     // A "content element" is one where the start tag is never self-closing whether marked or not
     // so <content> and <content/> are both non-self closing start tags
-    is_content_element(tagID: TagID): boolean;
+    isContentElement(tagID: TagID): boolean;
 
     // An "opaque element" is one where the content of the element is opaque text that is not parsed
     // The parser just looks for the end tag
     // so <opaque><something></something></opaque> will treat "<something></something>" as text
-    is_opaque_element(tagID: TagID): boolean;
+    isOpaqueElement(tagID: TagID): boolean;
 
     // Return true if when we see a start tag with siblingID and there is an open element with tagID, we should close the element with tagID
     // <tagID><siblingID> --> <tagID></tagID><siblingID>
-    is_autoclosing_sibling(tagID: TagID, siblingID: TagID): boolean;
+    isAutoclosingSibling(tagID: TagID, siblingID: TagID): boolean;
 
     // Return true if this element should be closed when its parent is closed even if we haven't seen its end tag
     // These elements are also closed by EOF as long as all children are also closed
     // <parent><tagID></parent> --> <parent><tagID></tagID></parent>
-    is_autoclose_by_parent(tagID: TagID): boolean;
+    isAutocloseByParent(tagID: TagID): boolean;
 
     // If the end tag is a wildcard, it takes on the tag ID of the last open element
     // For example, you could allow </> to be the end tag for any open tag by returning true for any empty name
     // or you could completely ignore the names of end tags by returning true without even looking at the name
     // HTML and XML don't have wildcard end tags
-    is_wildcard_end_tag(tagID: TagID): boolean;
+    isWildcardEndTag(tagID: TagID): boolean;
 
     // Return true if seeing the end tag for this element will close all open elements contained within
     // Note that this only closes elements when we see both the start tag and the end tag; a floating or autocreated end tag does not close open elements
     // <tagID><child><grandchild></tagID> --> <tagID><child><grandchild></grandchild></child></tagID>
-    is_autoclosing_end_tag(tagID: TagID): boolean;
+    isAutoclosingEndTag(tagID: TagID): boolean;
 };
 
 type TagAndSiblings = [string, string[]];
@@ -85,7 +85,7 @@ export class Policy implements LandmarksPolicy {
         this.data = data;
     }
 
-    get_element_name_start(text: string, pos: number): number {
+    getElementNameStart(text: string, pos: number): number {
         if (pos < text.length) {
             var name_start = text.charCodeAt(pos);
             if (('0'.charCodeAt(0) <= name_start && name_start <= '9'.charCodeAt(0)) || ('A'.charCodeAt(0) <= name_start && name_start <= 'z'.charCodeAt(0))) {
@@ -95,27 +95,27 @@ export class Policy implements LandmarksPolicy {
         return npos;
     }
 
-    get_TagID(name: string): string {
+    getTagID(name: string): string {
         return name.toLowerCase();
     }
 
-    is_same_element(lhs: TagID, rhs: TagID): boolean {
+    isSameElement(lhs: TagID, rhs: TagID): boolean {
         return lhs === rhs;
     }
 
-    is_void_element(tagID: TagID): boolean {
+    isVoidElement(tagID: TagID): boolean {
         return this.data.VoidElements.includes(tagID);
     }
 
-    is_content_element(tagID: TagID): boolean {
+    isContentElement(tagID: TagID): boolean {
         return this.data.ContentElements.includes(tagID);
     }
 
-    is_opaque_element(tagID: TagID): boolean {
+    isOpaqueElement(tagID: TagID): boolean {
         return this.data.OpaqueElements.includes(tagID);
     }
 
-    is_autoclosing_sibling(tagID: TagID, siblingID: TagID): boolean {
+    isAutoclosingSibling(tagID: TagID, siblingID: TagID): boolean {
         var entry = this.data.AutocloseBySibling.find(x => {
             return x[0] === tagID;
         });
@@ -125,15 +125,15 @@ export class Policy implements LandmarksPolicy {
         return false;
     }
 
-    is_autoclose_by_parent(tagID: TagID): boolean {
+    isAutocloseByParent(tagID: TagID): boolean {
         return this.data.AutocloseByParent.includes(tagID);
     }
 
-    is_wildcard_end_tag(tagID: TagID): boolean {
+    isWildcardEndTag(tagID: TagID): boolean {
         return false;
     }
 
-    is_autoclosing_end_tag(tagID: TagID): boolean {
+    isAutoclosingEndTag(tagID: TagID): boolean {
         return this.data.AutoclosingEndTags.includes(tagID);
     }
 }
