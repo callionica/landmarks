@@ -11,7 +11,7 @@ export enum EndTagState {
     autoclosed_by_ancestor = 4, // Closed when specific ancestor closed
 };
 
-export function is_autoclosed(state : EndTagState) : boolean  {
+export function isAutoclosed(state : EndTagState) : boolean  {
     switch (state) {
         case EndTagState.floating: // fallthrough
         case EndTagState.matching:
@@ -36,7 +36,7 @@ export enum SelfClosingMarker {
     present = 1,
 };
 
-export function is_self_closing(marker : SelfClosingMarker, policy : SelfClosingPolicy) : boolean {
+export function isSelfClosing(marker : SelfClosingMarker, policy : SelfClosingPolicy) : boolean {
     return policy === SelfClosingPolicy.required || (policy === SelfClosingPolicy.allowed && marker === SelfClosingMarker.present);
 }
 
@@ -48,7 +48,7 @@ export class LandmarksRange {
         this.start = start; this.end = end;
     };
 
-    is_complete() : boolean {        
+    get isComplete() : boolean {        
         return this.end !== npos;
     }
 };
@@ -64,12 +64,12 @@ export class LandmarksAttribute {
         this.all = new LandmarksRange(end, end);
     };
 
-    is_complete() : boolean {        
-        return this.value.is_complete();
+    get isComplete() : boolean {
+        return this.value.isComplete;
     }
 
-    is_name_complete() : boolean {
-        return this.name.is_complete();
+    get isNameComplete() : boolean {
+        return this.name.isComplete;
     }
 };
 
@@ -88,8 +88,8 @@ export class LandmarksStartTag extends LandmarksStartTagPrefix {
     self_closing_policy : SelfClosingPolicy = SelfClosingPolicy.allowed;
     self_closing_marker : SelfClosingMarker = SelfClosingMarker.absent;
 
-    is_self_closing() : boolean {
-        return is_self_closing(this.self_closing_marker, this.self_closing_policy);
+    get isSelfClosing() : boolean {
+        return isSelfClosing(this.self_closing_marker, this.self_closing_policy);
     }
 };
 

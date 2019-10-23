@@ -333,7 +333,7 @@ export function LandmarksParser(document : string, policy : LandmarksPolicy, han
                     seen_start_tag(tag);
                     start_position = search_position = end;
                     
-                    if (!tag.is_self_closing()) {
+                    if (!tag.isSelfClosing) {
                         elements.push(tagID);
                         
                         if (policy.is_opaque_element(tagID)) {
