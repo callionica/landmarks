@@ -41,8 +41,8 @@ export function is_self_closing(marker : SelfClosingMarker, policy : SelfClosin
 }
 
 export class LandmarksRange {
-    start: LandmarksPosition;
-    end: LandmarksPosition;
+    readonly start: LandmarksPosition;
+    readonly end: LandmarksPosition;
 
     constructor(start: LandmarksPosition = npos, end: LandmarksPosition = npos) {
         this.start = start; this.end = end;
