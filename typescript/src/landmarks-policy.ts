@@ -1,6 +1,6 @@
 // ALL RIGHTS RESERVED
 
-import { TagID, LandmarksPosition } from "./landmarks-parser-types";
+import { TagID, LandmarksPosition, npos } from "./landmarks-parser-types";
 
 // An interface that allows you to get help from the compiler when implementing a Policy used by the Parser
 // A Policy controls various aspects of the Parser's behavior for example:
@@ -65,3 +65,75 @@ export interface LandmarksPolicy {
     // <tagID><child><grandchild></tagID> --> <tagID><child><grandchild></grandchild></child></tagID>
     is_autoclosing_end_tag(tagID: TagID): boolean;
 };
+
+type TagAndSiblings = [string, string[]];
+
+export interface LandmarksPolicyData {
+    VoidElements: readonly string[];
+    ContentElements: readonly string[];
+    OpaqueElements: readonly string[];
+    AutoclosingEndTags: readonly string[];
+    AutocloseByParent: readonly string[];
+    AutocloseBySibling: readonly TagAndSiblings[];
+}
+
+export class Policy implements LandmarksPolicy {
+
+    private data: LandmarksPolicyData;
+
+    constructor(data: LandmarksPolicyData) {
+        this.data = data;
+    }
+
+    get_element_name_start(text: string, pos: number): number {
+        if (pos < text.length) {
+            var name_start = text.charCodeAt(pos);
+            if (('0'.charCodeAt(0) <= name_start && name_start <= '9'.charCodeAt(0)) || ('A'.charCodeAt(0) <= name_start && name_start <= 'z'.charCodeAt(0))) {
+                return pos;
+            }
+        }
+        return npos;
+    }
+
+    get_TagID(name: string): string {
+        return name.toLowerCase();
+    }
+
+    is_same_element(lhs: TagID, rhs: TagID): boolean {
+        return lhs === rhs;
+    }
+
+    is_void_element(tagID: TagID): boolean {
+        return this.data.VoidElements.includes(tagID);
+    }
+
+    is_content_element(tagID: TagID): boolean {
+        return this.data.ContentElements.includes(tagID);
+    }
+
+    is_opaque_element(tagID: TagID): boolean {
+        return this.data.OpaqueElements.includes(tagID);
+    }
+
+    is_autoclosing_sibling(tagID: TagID, siblingID: TagID): boolean {
+        var entry = this.data.AutocloseBySibling.find(x => {
+            return x[0] === tagID;
+        });
+        if (entry) {
+            return entry[1].includes(siblingID);
+        }
+        return false;
+    }
+
+    is_autoclose_by_parent(tagID: TagID): boolean {
+        return this.data.AutocloseByParent.includes(tagID);
+    }
+
+    is_wildcard_end_tag(tagID: TagID): boolean {
+        return false;
+    }
+
+    is_autoclosing_end_tag(tagID: TagID): boolean {
+        return this.data.AutoclosingEndTags.includes(tagID);
+    }
+}
