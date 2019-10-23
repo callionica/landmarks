@@ -304,7 +304,7 @@ export function LandmarksParser(document : string, policy : LandmarksPolicy, han
                                     endTag.all   = new LandmarksRange(start_position, start_position);
                                     endTag.name  = endTag.all;
                                     endTag.tagID = back();
-                                    endTag.state = EndTagState.autoclosed_by_sibling;
+                                    endTag.state = EndTagState.autoclosedBySibling;
                                     seen_end_tag_prefix(endTag);
                                     seen_end_tag(endTag);
                                     elements.pop();
@@ -402,7 +402,7 @@ export function LandmarksParser(document : string, policy : LandmarksPolicy, han
                         // Then we need to close them
                         var landmark = policy.is_autoclosing_end_tag(tagID);
                         
-                        var state = landmark ? EndTagState.autoclosed_by_ancestor : EndTagState.autoclosed_by_parent;
+                        var state = landmark ? EndTagState.autoclosedByAncestor : EndTagState.autoclosedByParent;
                         var index = elements.length;
                         for (; index > 0; --index) {
                             var e = elements[index-1];
@@ -487,7 +487,7 @@ export function LandmarksParser(document : string, policy : LandmarksPolicy, han
             endTag.all = new LandmarksRange(search_position, search_position);
             endTag.name = endTag.all;
             endTag.tagID = back();
-            endTag.state = EndTagState.autoclosed_by_parent;
+            endTag.state = EndTagState.autoclosedByParent;
             seen_end_tag_prefix(endTag);
             seen_end_tag(endTag);
             elements.pop();

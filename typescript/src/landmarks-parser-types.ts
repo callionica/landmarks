@@ -4,11 +4,11 @@ export type LandmarksPosition = number;
 export const npos : LandmarksPosition = -1;
 
 export enum EndTagState {
-    floating               = 0, // No matching start tag
-    matching               = 1, // Matching start tag
-    autoclosed_by_parent   = 2, // Closed when parent closed (or EOF)
-    autoclosed_by_sibling  = 3, // Closed when specific sibling opened
-    autoclosed_by_ancestor = 4, // Closed when specific ancestor closed
+    floating             = 0, // No matching start tag
+    matching             = 1, // Matching start tag
+    autoclosedByParent   = 2, // Closed when parent closed (or EOF)
+    autoclosedBySibling  = 3, // Closed when specific sibling opened
+    autoclosedByAncestor = 4, // Closed when specific ancestor closed
 };
 
 export function isAutoclosed(state : EndTagState) : boolean  {
@@ -16,9 +16,9 @@ export function isAutoclosed(state : EndTagState) : boolean  {
         case EndTagState.floating: // fallthrough
         case EndTagState.matching:
             return false;
-        case EndTagState.autoclosed_by_parent  : // fallthrough
-        case EndTagState.autoclosed_by_sibling : // fallthrough
-        case EndTagState.autoclosed_by_ancestor:
+        case EndTagState.autoclosedByParent  : // fallthrough
+        case EndTagState.autoclosedBySibling : // fallthrough
+        case EndTagState.autoclosedByAncestor:
             return true;
     }
     // TODO assert(false && "switch statement not exhaustive");
