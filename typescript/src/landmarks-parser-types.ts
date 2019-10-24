@@ -1,7 +1,9 @@
 // ALL RIGHTS RESERVED
 
 export type LandmarksPosition = number;
-export const npos: LandmarksPosition = -1;
+
+// The parsing code assumes that npos is a large positive integer
+export const npos: LandmarksPosition = Number.MAX_SAFE_INTEGER;
 
 export enum EndTagState {
     floating = "floating", // No matching start tag
@@ -45,6 +47,9 @@ export class LandmarksRange {
     readonly end: LandmarksPosition;
 
     constructor(start: LandmarksPosition = npos, end: LandmarksPosition = npos) {
+        if ((start < 0) || (end < start)) {
+            throw "Range positions must be positive integers with start <= end";
+        }
         this.start = start; this.end = end;
     };
 
@@ -53,6 +58,10 @@ export class LandmarksRange {
     }
 
     getText(document: string) : string {
+        if (this.start === npos) {
+            return "";
+        }
+        
         return document.substring(this.start, this.end);
     }
 };

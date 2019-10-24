@@ -10,7 +10,8 @@ type AttributeCallback = (attr: LandmarksAttribute) => void;
 // Define some constants and functions to make it easier to convert C++ code
 
 function find(text: string, term: string, position: LandmarksPosition = 0) {
-    return text.indexOf(term, position);
+    var pos = text.indexOf(term, position);
+    return (pos < 0) ? npos : pos;
 }
 
 function findFirstOf(text: string, characters: string, position: LandmarksPosition = 0) {

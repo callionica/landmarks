@@ -35,7 +35,7 @@ export class Logger implements LandmarksHandler {
 
     EndTagPrefix(document: string, tag: LandmarksEndTagPrefix): void {}
     EndTagAttribute(document: string, attribute: LandmarksAttribute): void {}
-    EndTag(document: string, tag: LandmarksEndTag): void {}
+    EndTag(document: string, tag: LandmarksEndTag): void { console.log(tag); console.log(tag.name.getText(document)); console.log(tag.all.getText(document)); }
 
     EOF(document: string, open_elements: readonly TagID[]): void {}
 }
