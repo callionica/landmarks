@@ -1,9 +1,9 @@
 // ALL RIGHTS RESERVED
 
-import { LandmarksParserConstants } from "./landmarks-parser-constants";
-import { LandmarksPosition, npos, LandmarksRange, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksStartTag, LandmarksEndTagPrefix, LandmarksEndTag, TagID, EndTagState, SelfClosingPolicy, SelfClosingMarker } from "./landmarks-parser-types";
-import { LandmarksHandler } from "./landmarks-handler"
-import { LandmarksPolicy } from "./landmarks-policy"
+import { LandmarksParserConstants } from "./landmarks-parser-constants.js";
+import { LandmarksPosition, npos, LandmarksRange, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksStartTag, LandmarksEndTagPrefix, LandmarksEndTag, TagID, EndTagState, SelfClosingPolicy, SelfClosingMarker } from "./landmarks-parser-types.js";
+import { LandmarksHandler } from "./landmarks-handler.js"
+import { LandmarksPolicy } from "./landmarks-policy.js"
 
 type AttributeCallback = (attr: LandmarksAttribute) => void;
 

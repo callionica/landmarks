@@ -1,7 +1,7 @@
-import { LandmarksPolicyData } from "./landmarks-policy"
+import { LandmarksPolicy, LandmarksPolicyData, Policy } from "./landmarks-policy.js"
 
-function html5() : LandmarksPolicyData {
-    return {
+function html5_() : LandmarksPolicy {
+    return new Policy({
         VoidElements: ["area", "base", "br", "col", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"],
         ContentElements: [
             "html",
@@ -152,5 +152,7 @@ function html5() : LandmarksPolicyData {
             ["h6", ["h1", "h2", "h3", "h4", "h5", "h6"]],
         ],
         WildcardEndTags: [],
-    };
+    });
 }
+
+export const html5 = html5_();
