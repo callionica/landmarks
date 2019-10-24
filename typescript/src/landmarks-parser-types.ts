@@ -51,6 +51,10 @@ export class LandmarksRange {
     get isComplete(): boolean {
         return this.end !== npos;
     }
+
+    getText(document: string) : string {
+        return document.substring(this.start, this.end);
+    }
 };
 
 export class LandmarksAttribute {
