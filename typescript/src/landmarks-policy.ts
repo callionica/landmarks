@@ -78,9 +78,16 @@ export interface LandmarksPolicyData {
     WildcardEndTags: readonly string[];
 }
 
+const charCode = {
+    "0": "0".charCodeAt(0),
+    "9": "9".charCodeAt(0),
+    "A": "A".charCodeAt(0),
+    "z": "z".charCodeAt(0),
+};
+
 export class Policy implements LandmarksPolicy {
 
-    private data: LandmarksPolicyData;
+    private readonly data: LandmarksPolicyData;
 
     constructor(data: LandmarksPolicyData) {
         this.data = data;
@@ -89,7 +96,7 @@ export class Policy implements LandmarksPolicy {
     getElementNameStart(text: string, pos: number): number {
         if (pos < text.length) {
             var name_start = text.charCodeAt(pos);
-            if (('0'.charCodeAt(0) <= name_start && name_start <= '9'.charCodeAt(0)) || ('A'.charCodeAt(0) <= name_start && name_start <= 'z'.charCodeAt(0))) {
+            if ((charCode['0'] <= name_start && name_start <= charCode['9']) || (charCode['A'] <= name_start && name_start <= charCode['z'])) {
                 return pos;
             }
         }
@@ -117,8 +124,8 @@ export class Policy implements LandmarksPolicy {
     }
 
     isAutoclosingSibling(tagID: TagID, siblingID: TagID): boolean {
-        var entry = this.data.AutocloseBySibling.find(x => {
-            return x[0] === tagID;
+        var entry = this.data.AutocloseBySibling.find((e: TagAndSiblings) => {
+            return e[0] === tagID;
         });
         if (entry) {
             return entry[1].includes(siblingID);
