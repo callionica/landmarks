@@ -4,11 +4,11 @@ export type LandmarksPosition = number;
 export const npos: LandmarksPosition = -1;
 
 export enum EndTagState {
-    floating = 0, // No matching start tag
-    matching = 1, // Matching start tag
-    autoclosedByParent = 2, // Closed when parent closed (or EOF)
-    autoclosedBySibling = 3, // Closed when specific sibling opened
-    autoclosedByAncestor = 4, // Closed when specific ancestor closed
+    floating = "floating", // No matching start tag
+    matching = "matching", // Matching start tag
+    autoclosedByParent = "autoclosedByParent", // Closed when parent closed (or EOF)
+    autoclosedBySibling = "autoclosedBySibling", // Closed when specific sibling opened
+    autoclosedByAncestor = "autoclosedByAncestor", // Closed when specific ancestor closed
 };
 
 export function isAutoclosed(state: EndTagState): boolean {
@@ -26,14 +26,14 @@ export function isAutoclosed(state: EndTagState): boolean {
 }
 
 export enum SelfClosingPolicy {
-    allowed = 0,
-    prohibited = 1,
-    required = 2,
+    allowed = "allowed",
+    prohibited = "prohibited",
+    required = "required",
 };
 
 export enum SelfClosingMarker {
-    absent = 0,
-    present = 1,
+    absent = "absent",
+    present = "present",
 };
 
 export function isSelfClosing(marker: SelfClosingMarker, policy: SelfClosingPolicy): boolean {
@@ -85,11 +85,11 @@ export class LandmarksStartTagPrefix extends LandmarksTagPrefix {
 };
 
 export class LandmarksStartTag extends LandmarksStartTagPrefix {
-    self_closing_policy: SelfClosingPolicy = SelfClosingPolicy.allowed;
-    self_closing_marker: SelfClosingMarker = SelfClosingMarker.absent;
+    selfClosingPolicy: SelfClosingPolicy = SelfClosingPolicy.allowed;
+    selfClosingMarker: SelfClosingMarker = SelfClosingMarker.absent;
 
     get isSelfClosing(): boolean {
-        return isSelfClosing(this.self_closing_marker, this.self_closing_policy);
+        return isSelfClosing(this.selfClosingMarker, this.selfClosingPolicy);
     }
 };
 

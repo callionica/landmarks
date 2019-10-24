@@ -319,13 +319,13 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
                     search_position = parseAttributes(end_name, seen_start_tag_attribute);
 
                     if (policy.isVoidElement(tagID)) {
-                        tag.self_closing_policy = SelfClosingPolicy.required;
+                        tag.selfClosingPolicy = SelfClosingPolicy.required;
                     } else if (policy.isContentElement(tagID)) {
-                        tag.self_closing_policy = SelfClosingPolicy.prohibited;
+                        tag.selfClosingPolicy = SelfClosingPolicy.prohibited;
                     }
 
                     if (search_position < length - 1) {
-                        tag.self_closing_marker = (document[search_position] == '/') ? SelfClosingMarker.present : SelfClosingMarker.absent;
+                        tag.selfClosingMarker = (document[search_position] == '/') ? SelfClosingMarker.present : SelfClosingMarker.absent;
                     }
 
                     var end = findEnd(close, search_position);
