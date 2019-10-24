@@ -6,7 +6,13 @@
     <title>Landmarks Parser</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
-    <script >
+    <script type="module">
+        import { LandmarksParser } from "../js/landmarks-parser.js";
+        import { html5 } from "../js/landmarks-policy-html5.js";
+        import { Logger } from "../js/landmarks-handler.js";
+        var handler = new Logger();
+        var parser = LandmarksParser("<test><i>X</o></test>", html5, handler);
+        parser.parse();
     </script>
 </head>
 <body>
