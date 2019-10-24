@@ -2,7 +2,7 @@
   "compilerOptions": {
     "incremental": true,
     "target": "ES2016",
-    "module": "commonjs",
+    "module": "es2015",
     "sourceMap": true,
     "outDir": "./js/",
     "rootDir": "./src/",
