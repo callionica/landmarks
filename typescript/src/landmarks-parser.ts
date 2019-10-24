@@ -1,7 +1,7 @@
 // ALL RIGHTS RESERVED
 
 import { LandmarksParserConstants } from "./landmarks-parser-constants.js";
-import { LandmarksPosition, npos, LandmarksRange, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksStartTag, LandmarksEndTagPrefix, LandmarksEndTag, TagID, EndTagState, SelfClosingPolicy, SelfClosingMarker } from "./landmarks-parser-types.js";
+import { LandmarksPosition, npos, LandmarksRange, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksStartTag, LandmarksEndTagPrefix, LandmarksEndTag, TagID, UnknownTagID, EndTagState, SelfClosingPolicy, SelfClosingMarker } from "./landmarks-parser-types.js";
 import { LandmarksHandler } from "./landmarks-handler.js"
 import { LandmarksPolicy } from "./landmarks-policy.js"
 
@@ -383,6 +383,9 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
                 var pos = (start_name > length) ? length : start_name;
                 var el_name = document.substr(pos, end_name - pos);
                 var tagID = policy.getTagID(el_name);
+                if (end_name === npos) {
+                    tagID = UnknownTagID;
+                }
 
                 var end_state = EndTagState.floating;
 

@@ -87,6 +87,7 @@ export class LandmarksAttribute {
 };
 
 export type TagID = string;
+export const UnknownTagID : TagID = "(unknown)";
 
 export class LandmarksTagPrefix {
     tagID: TagID = "";
