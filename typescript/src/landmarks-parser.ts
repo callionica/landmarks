@@ -10,14 +10,14 @@ type AttributeCallback = (attr: LandmarksAttribute) => void;
 // Define some constants and functions to make it easier to convert C++ code
 
 function find(text: string, term: string, position: LandmarksPosition = 0) {
-    var pos = text.indexOf(term, position);
+    const pos = text.indexOf(term, position);
     return (pos < 0) ? npos : pos;
 }
 
 function findFirstOf(text: string, characters: string, position: LandmarksPosition = 0) {
-    var pos = position;
+    let pos = position;
     while (pos < text.length) {
-        var character = text[pos];
+        const character = text[pos];
         if (characters.includes(character)) {
             return pos;
         }
@@ -27,9 +27,9 @@ function findFirstOf(text: string, characters: string, position: LandmarksPositi
 }
 
 function findFirstNotOf(text: string, characters: string, position: LandmarksPosition = 0) {
-    var pos = position;
+    let pos = position;
     while (pos < text.length) {
-        var character = text[pos];
+        const character = text[pos];
         if (!characters.includes(character)) {
             return pos;
         }
@@ -39,11 +39,11 @@ function findFirstNotOf(text: string, characters: string, position: LandmarksPos
 }
 
 function choose(text: string, position: LandmarksPosition, choices: string[]) {
-    let remaining = text.length - position;
+    const remaining = text.length - position;
     for (var choice of choices) {
         if (choice.length <= remaining) {
             // TODO Efficiency
-            var partial = text.substring(position, position + choice.length);
+            const partial = text.substring(position, position + choice.length);
             if (partial === choice) {
                 return choice;
             }
@@ -59,11 +59,11 @@ export interface IParser {
 }
 
 export function LandmarksParser(document: string, policy: LandmarksPolicy, handler: LandmarksHandler): IParser {
-    let constants = LandmarksParserConstants();
-    let length = document.length;
+    const constants = LandmarksParserConstants();
+    const length = document.length;
 
     function findEnd(term: string, position: LandmarksPosition) {
-        var found = find(document, term, position);
+        let found = find(document, term, position);
         if (found != npos) {
             found += term.length;
         }
@@ -126,14 +126,14 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
     /////
 
     function parseAttributes(position: LandmarksPosition, callback: AttributeCallback) {
-        let attribute_spaces = constants.attribute_spaces;
-        let close_choices = constants.close_choices;
-        let close = constants.close;
-        let attribute_name_end = constants.attribute_name_end;
-        let attribute_value_end = constants.attribute_value_end;
+        const attribute_spaces = constants.attribute_spaces;
+        const close_choices = constants.close_choices;
+        const close = constants.close;
+        const attribute_name_end = constants.attribute_name_end;
+        const attribute_value_end = constants.attribute_value_end;
 
-        var search_position: LandmarksPosition = position;
-        var attr: LandmarksAttribute | null = null;
+        let search_position: LandmarksPosition = position;
+        let attr: LandmarksAttribute | null = null;
 
         while (search_position < length) {
 
@@ -149,7 +149,7 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
             }
 
             {
-                var choice = choose(document, search_position, close_choices);
+                const choice = choose(document, search_position, close_choices);
                 if (choice === close) {
                     // We skipped spaces and slashes and we've seen >
                     // If previous character is slash, we back up since that slash is part of the self-closing token
@@ -165,10 +165,10 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
             }
 
             // Looking at attribute name
-            var name_start = search_position;
+            const name_start = search_position;
             search_position = findFirstOf(document, attribute_name_end, search_position + 1);
 
-            var name_end = search_position;
+            const name_end = search_position;
             attr = new LandmarksAttribute(name_start, name_end);
 
             if (search_position === npos) {
@@ -177,7 +177,7 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
             }
 
             {
-                var choice = choose(document, search_position, close_choices);
+                const choice = choose(document, search_position, close_choices);
                 if (choice !== null) {
                     // Hit the end of the tag
                     break;
@@ -202,10 +202,10 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
                 break;
             }
 
-            var found_end_tag = false;
-            var value_start = search_position;
-            var value_end = value_start;
-            var s = document[value_start];
+            let found_end_tag = false;
+            let value_start = search_position;
+            let value_end = value_start;
+            const s = document[value_start];
             if (s === '"' || s === '\'') {
                 ++value_start;
                 if (value_start >= length) {
@@ -243,17 +243,17 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
     }
 
     function parse() {
-        let open = constants.open;
-        let open_choices = constants.open_choices;
-        let element_name_end = constants.element_name_end;
-        let open_end_tag = constants.open_end_tag;
-        let close = constants.close;
+        const open = constants.open;
+        const open_choices = constants.open_choices;
+        const element_name_end = constants.element_name_end;
+        const open_end_tag = constants.open_end_tag;
+        const close = constants.close;
 
-        var start_position = 0; // The start of the current token
-        var search_position = 0; // The point we'll search from
+        let start_position = 0; // The start of the current token
+        let search_position = 0; // The point we'll search from
 
-        var elements: TagID[] = []; // The stack of open elements
-        var back = function () { return elements[elements.length - 1]; };
+        const elements: TagID[] = []; // The stack of open elements
+        const back = function () { return elements[elements.length - 1]; };
 
         while (search_position < length) {
             search_position = find(document, open, search_position);
@@ -267,17 +267,17 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
 
             start_position = search_position;
 
-            var choice = choose(document, start_position, open_choices);
+            const choice = choose(document, start_position, open_choices);
 
             if (choice === open) {
                 // We found '<', but it's not an end tag, comment, cdata, processing, or declaration, so it's either a start tag or text
                 // depending on whether it's followed by a valid element name
-                var start_name_o = policy.getElementNameStart(document, start_position + open.length);
+                const start_name_o = policy.getElementNameStart(document, start_position + open.length);
                 if (start_name_o != npos) {
-                    var start_name = start_name_o;
-                    var end_name = findFirstOf(document, element_name_end, start_name);
+                    const start_name = start_name_o;
+                    const end_name = findFirstOf(document, element_name_end, start_name);
 
-                    var tag = new LandmarksStartTag();
+                    const tag = new LandmarksStartTag();
                     tag.all = new LandmarksRange(start_position, end_name);
                     tag.name = new LandmarksRange(start_name, end_name);
 
@@ -291,22 +291,22 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
                         break;
                     }
 
-                    var original_element_name = document.substr(start_name, end_name - start_name);
-                    var tagID = policy.getTagID(original_element_name);
+                    const original_element_name = document.substr(start_name, end_name - start_name);
+                    const tagID = policy.getTagID(original_element_name);
 
                     tag.tagID = tagID;
 
                     if (elements.length > 0) {
-                        var index = elements.length;
+                        let index = elements.length;
                         for (; index > 0; --index) {
-                            var open_element = elements[index - 1];
+                            const open_element = elements[index - 1];
                             // If there is an open element that the current start tag can autoclose,
                             // we close all elements in the stack until we get to the autoclosing sibling
                             if (policy.isAutoclosingSibling(open_element, tagID)) {
-                                var count = elements.length - (index - 1);
+                                let count = elements.length - (index - 1);
                                 while (count--) {
-                                    var t = back();
-                                    var endTag = new LandmarksEndTag();
+                                    const t = back();
+                                    const endTag = new LandmarksEndTag();
                                     endTag.all = new LandmarksRange(start_position, start_position);
                                     endTag.name = endTag.all;
                                     endTag.tagID = back();
@@ -334,7 +334,7 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
                         tag.selfClosingMarker = (document[search_position] == '/') ? SelfClosingMarker.present : SelfClosingMarker.absent;
                     }
 
-                    var end = findEnd(close, search_position);
+                    const end = findEnd(close, search_position);
                     tag.all = new LandmarksRange(start_position, end);
                     seen_start_tag(tag);
                     start_position = search_position = end;
@@ -348,11 +348,11 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
                                 // Search for the end tag
                                 search_position = findEnd(open_end_tag, search_position);
                                 if (search_position < length) {
-                                    var start_name_o = policy.getElementNameStart(document, search_position);
-                                    var start_name = (start_name_o != npos) ? start_name_o : search_position;
-                                    var end_name = findFirstOf(document, element_name_end, start_name);
-                                    var pos = (start_name > length) ? length : start_name;
-                                    var currentID = policy.getTagID(document.substr(pos, end_name - pos));
+                                    const start_name_o = policy.getElementNameStart(document, search_position);
+                                    const start_name = (start_name_o != npos) ? start_name_o : search_position;
+                                    const end_name = findFirstOf(document, element_name_end, start_name);
+                                    const pos = (start_name > length) ? length : start_name;
+                                    const currentID = policy.getTagID(document.substr(pos, end_name - pos));
 
                                     if (policy.isSameElement(tagID, currentID)) {
                                         /*
@@ -378,21 +378,18 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
                     ++search_position;
                 }
             } else if (choice === open_end_tag) {
-                var start_name_o = policy.getElementNameStart(document, start_position + open_end_tag.length);
+                const start_name_o = policy.getElementNameStart(document, start_position + open_end_tag.length);
                 // REVIEW: Unlike how we treat start tag markup, we don't allow an end tag to ever be interpreted as text
-                var start_name = (start_name_o != npos) ? start_name_o : start_position + open_end_tag.length;
+                let start_name = (start_name_o != npos) ? start_name_o : start_position + open_end_tag.length;
                 if (start_name >= length) {
                     start_name = npos;
                 }
-                var end_name = findFirstOf(document, element_name_end, start_name);
-                var pos = (start_name > length) ? length : start_name;
-                var el_name = document.substr(pos, end_name - pos);
-                var tagID = policy.getTagID(el_name);
-                if (end_name === npos) {
-                    tagID = UnknownTagID;
-                }
+                const end_name = findFirstOf(document, element_name_end, start_name);
+                const pos = (start_name > length) ? length : start_name;
+                const el_name = document.substr(pos, end_name - pos);
+                let tagID = (end_name === npos) ? UnknownTagID : policy.getTagID(el_name);
 
-                var end_state = EndTagState.unmatched;
+                let end_state = EndTagState.unmatched;
 
                 if (elements.length > 0) {
                     // If the end tag is a wildcard, it takes on the tag ID of the last open element
@@ -409,13 +406,13 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
                         // If the close tag is for a landmark and there's a matching open tag on the stack
                         // Or if the stack contains autoclose_by_parent items
                         // Then we need to close them
-                        var landmark = policy.isAutoclosingEndTag(tagID);
+                        const landmark = policy.isAutoclosingEndTag(tagID);
 
-                        var state = landmark ? EndTagState.autoclosedByAncestor : EndTagState.autoclosedByParent;
-                        var index = elements.length;
+                        const state = landmark ? EndTagState.autoclosedByAncestor : EndTagState.autoclosedByParent;
+                        let index = elements.length;
                         for (; index > 0; --index) {
-                            var e = elements[index - 1];
-                            var autoclose = policy.isAutocloseByParent(e);
+                            const e = elements[index - 1];
+                            const autoclose = policy.isAutocloseByParent(e);
 
                             if (policy.isSameElement(e, tagID)) {
                                 // If we get here, the current end tag is for an open element
@@ -423,7 +420,7 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
                                 // or the current end tag is a landmark
                                 while (!policy.isSameElement(back(), tagID)) {
                                     // Close all the autoclosing elements
-                                    var endTag = new LandmarksEndTag();
+                                    const endTag = new LandmarksEndTag();
                                     endTag.all = new LandmarksRange(start_position, start_position);
                                     endTag.name = endTag.all;
                                     endTag.tagID = back();
@@ -444,7 +441,7 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
                     }
                 }
 
-                var endTag = new LandmarksEndTag();
+                const endTag = new LandmarksEndTag();
                 endTag.all = new LandmarksRange(start_position, end_name);
                 endTag.name = new LandmarksRange(start_name, end_name);
                 endTag.tagID = tagID;
@@ -454,7 +451,7 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
 
                 search_position = parseAttributes(end_name, seen_end_tag_attribute);
 
-                var end = findEnd(close, search_position);
+                const end = findEnd(close, search_position);
 
                 endTag.all = new LandmarksRange(start_position, end);
 
@@ -464,19 +461,19 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
             } else if (choice === constants.open_comment) {
                 // Note that we search from the start of the token so that start and end tokens can overlap
                 // Example: <!--> is a complete comment
-                var end = findEnd(constants.close_comment, search_position);
+                const end = findEnd(constants.close_comment, search_position);
                 seen_comment(new LandmarksRange(start_position, end));
                 start_position = search_position = end;
             } else if (choice === constants.open_cdata) {
-                var end = findEnd(constants.close_cdata, search_position);
+                const end = findEnd(constants.close_cdata, search_position);
                 seen_cdata(new LandmarksRange(start_position, end));
                 start_position = search_position = end;
             } else if (choice === constants.open_processing) {
-                var end = findEnd(constants.close_processing, search_position);
+                const end = findEnd(constants.close_processing, search_position);
                 seen_processing(new LandmarksRange(start_position, end));
                 start_position = search_position = end;
             } else if (choice === constants.open_declaration) {
-                var end = findEnd(constants.close_declaration, search_position);
+                const end = findEnd(constants.close_declaration, search_position);
                 seen_declaration(new LandmarksRange(start_position, end));
                 start_position = search_position = end;
             } else {
@@ -492,7 +489,7 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
         // Close the inner contiguous set of elements that are autoclosed by parent
         while ((elements.length > 0) && policy.isAutocloseByParent(back())) {
             // Close all the autoclosing elements
-            var endTag = new LandmarksEndTag();
+            const endTag = new LandmarksEndTag();
             endTag.all = new LandmarksRange(search_position, search_position);
             endTag.name = endTag.all;
             endTag.tagID = back();
