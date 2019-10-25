@@ -29,7 +29,7 @@ export class Logger implements LandmarksHandler {
 
     StartTagPrefix(document: string, tag: LandmarksStartTagPrefix): void { console.log(tag); }
     StartTagAttribute(document: string, attribute: LandmarksAttribute): void { console.log(attribute); }
-    StartTag(document: string, tag: LandmarksStartTag): void { console.log(tag); }
+    StartTag(document: string, tag: LandmarksStartTag): void { console.log(tag); console.log(tag.getQualifiedName(document)); }
 
     EndTagPrefix(document: string, tag: LandmarksEndTagPrefix): void { console.log(tag); }
     EndTagAttribute(document: string, attribute: LandmarksAttribute): void { console.log(attribute); }

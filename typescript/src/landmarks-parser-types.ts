@@ -66,33 +66,54 @@ export class LandmarksRange {
     }
 };
 
-export class LandmarksAttribute {
+class Nameable {
     name: LandmarksRange;
-    value: LandmarksRange;
     all: LandmarksRange;
 
     constructor(start: LandmarksPosition, end: LandmarksPosition) {
         this.name = new LandmarksRange(start, end);
-        this.value = new LandmarksRange(start, end);
         this.all = new LandmarksRange(end, end);
+    };
+
+    get isNameComplete(): boolean {
+        return this.name.isComplete;
+    }
+
+    getQualifiedName(document: string) {
+        const name = this.name.getText(document);
+        const prefixEnd = name.indexOf(":");
+        let prefix = "";
+        let localName = name;
+        if (prefixEnd >= 0) {
+            prefix = name.substr(0, prefixEnd);
+            localName = name.substr(prefixEnd + 1);
+        }
+        return [prefix, localName];
+    }
+}
+
+export class LandmarksAttribute extends Nameable {
+    value: LandmarksRange;
+    
+    constructor(start: LandmarksPosition, end: LandmarksPosition) {
+        super(start, end);
+        this.value = new LandmarksRange(start, end);
     };
 
     get isComplete(): boolean {
         return this.value.isComplete;
-    }
-
-    get isNameComplete(): boolean {
-        return this.name.isComplete;
     }
 };
 
 export type TagID = string;
 export const UnknownTagID : TagID = "(unknown)";
 
-export class LandmarksTagPrefix {
+export class LandmarksTagPrefix extends Nameable {
     tagID: TagID = "";
-    name: LandmarksRange = new LandmarksRange();
-    all: LandmarksRange = new LandmarksRange();;
+    
+    constructor() {
+        super(npos, npos);
+    }
 };
 
 export class LandmarksStartTagPrefix extends LandmarksTagPrefix {

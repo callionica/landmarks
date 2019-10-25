@@ -13,7 +13,7 @@
         import { Logger } from "../js/landmarks-handler.js";
         var handler = new Logger();
         var parser = LandmarksParser(html5);
-        parser.parse(`<p>Hello<p><self/><TEST x=1 y="2" z='3'><i>X</i></test`, handler);
+        parser.parse(`<p>Hello<p><ns:self/><TEST x=1 y="2" z='3'><i>X</i></test`, handler);
     </script>
 </head>
 
