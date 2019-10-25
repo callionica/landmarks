@@ -71,14 +71,14 @@ export interface LandmarksPolicy {
 type TagAndSiblings = [string, string[]];
 
 export interface LandmarksPolicyData {
-    Spaces: string;
-    VoidElements: readonly string[];
-    ContentElements: readonly string[];
-    OpaqueElements: readonly string[];
-    AutoclosingEndTags: readonly string[];
-    AutocloseByParent: readonly string[];
-    AutocloseBySibling: readonly TagAndSiblings[];
-    WildcardEndTags: readonly string[];
+    spaces: string;
+    voidElements: readonly string[];
+    contentElements: readonly string[];
+    opaqueElements: readonly string[];
+    autoclosingEndTags: readonly string[];
+    autocloseByParent: readonly string[];
+    autocloseBySibling: readonly TagAndSiblings[];
+    wildcardEndTags: readonly string[];
 }
 
 const charCode = {
@@ -97,7 +97,7 @@ export class Policy implements LandmarksPolicy {
     }
 
     get spaces() : string {
-        return this.data.Spaces;
+        return this.data.spaces;
     }
 
     getElementNameStart(text: string, pos: number): number {
@@ -119,19 +119,19 @@ export class Policy implements LandmarksPolicy {
     }
 
     isVoidElement(tagID: TagID): boolean {
-        return this.data.VoidElements.includes(tagID);
+        return this.data.voidElements.includes(tagID);
     }
 
     isContentElement(tagID: TagID): boolean {
-        return this.data.ContentElements.includes(tagID);
+        return this.data.contentElements.includes(tagID);
     }
 
     isOpaqueElement(tagID: TagID): boolean {
-        return this.data.OpaqueElements.includes(tagID);
+        return this.data.opaqueElements.includes(tagID);
     }
 
     isAutoclosingSibling(tagID: TagID, siblingID: TagID): boolean {
-        var entry = this.data.AutocloseBySibling.find((e: TagAndSiblings) => {
+        var entry = this.data.autocloseBySibling.find((e: TagAndSiblings) => {
             return e[0] === tagID;
         });
         if (entry) {
@@ -141,14 +141,14 @@ export class Policy implements LandmarksPolicy {
     }
 
     isAutocloseByParent(tagID: TagID): boolean {
-        return this.data.AutocloseByParent.includes(tagID);
+        return this.data.autocloseByParent.includes(tagID);
     }
 
     isWildcardEndTag(tagID: TagID): boolean {
-        return this.data.WildcardEndTags.includes(tagID);
+        return this.data.wildcardEndTags.includes(tagID);
     }
 
     isAutoclosingEndTag(tagID: TagID): boolean {
-        return this.data.AutoclosingEndTags.includes(tagID);
+        return this.data.autoclosingEndTags.includes(tagID);
     }
 }

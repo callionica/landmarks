@@ -2,9 +2,9 @@ import { LandmarksPolicy, LandmarksPolicyData, Policy } from "./landmarks-policy
 
 function html5_() : LandmarksPolicy {
     return new Policy({
-        Spaces: " \t\n\f\r",
-        VoidElements: ["area", "base", "br", "col", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"],
-        ContentElements: [
+        spaces: " \t\n\f\r",
+        voidElements: ["area", "base", "br", "col", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"],
+        contentElements: [
             "html",
             "head",
             "title",
@@ -120,10 +120,10 @@ function html5_() : LandmarksPolicy {
             "template",
             "canvas",
         ],
-        OpaqueElements: ["script", "style", "textarea", "title"],
-        AutoclosingEndTags: ["svg", "math", "pre", "p"],
-        AutocloseByParent: ["head", "body", "li", "dt", "dd", "p", "rb", "rt", "rtc", "rp", "optgroup", "option", "thead", "tbody", "tfoot", "tr", "td", "th"],
-        AutocloseBySibling: [
+        opaqueElements: ["script", "style", "textarea", "title"],
+        autoclosingEndTags: ["svg", "math", "pre", "p"],
+        autocloseByParent: ["head", "body", "li", "dt", "dd", "p", "rb", "rt", "rtc", "rp", "optgroup", "option", "thead", "tbody", "tfoot", "tr", "td", "th"],
+        autocloseBySibling: [
             ["a", ["a"]],
             ["li", ["li"]],
             ["dt", ["dt", "dd"]],
@@ -152,7 +152,7 @@ function html5_() : LandmarksPolicy {
             ["h5", ["h1", "h2", "h3", "h4", "h5", "h6"]],
             ["h6", ["h1", "h2", "h3", "h4", "h5", "h6"]],
         ],
-        WildcardEndTags: [],
+        wildcardEndTags: [],
     });
 }
 
