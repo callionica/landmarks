@@ -74,57 +74,6 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
         return findFirstNotOf(document, constants.spaces, position);
     }
 
-    //////
-    function seen_text(rng: LandmarksRange) {
-        handler.Text(document, rng);
-    }
-
-    function seen_comment(rng: LandmarksRange) {
-        handler.Comment(document, rng);
-    }
-
-    function seen_cdata(rng: LandmarksRange) {
-        handler.CData(document, rng);
-    }
-
-    function seen_processing(rng: LandmarksRange) {
-        handler.Processing(document, rng);
-    }
-
-    function seen_declaration(rng: LandmarksRange) {
-        handler.Declaration(document, rng);
-    }
-
-    function seen_start_tag_prefix(tag: LandmarksStartTagPrefix) {
-        handler.StartTagPrefix(document, tag);
-    }
-
-    function seen_start_tag_attribute(attr: LandmarksAttribute) {
-        handler.StartTagAttribute(document, attr);
-    }
-
-    function seen_end_tag_attribute(attr: LandmarksAttribute) {
-        handler.EndTagAttribute(document, attr);
-    }
-
-    function seen_start_tag(tag: LandmarksStartTag) {
-        handler.StartTag(document, tag);
-    }
-
-    function seen_end_tag_prefix(tag: LandmarksEndTagPrefix) {
-        handler.EndTagPrefix(document, tag);
-    }
-
-    function seen_end_tag(tag: LandmarksEndTag) {
-        handler.EndTag(document, tag);
-    }
-
-    function seen_eof(open_elements: readonly TagID[]) {
-        handler.EOF(document, open_elements);
-    }
-
-    /////
-
     function parseAttributes(position: LandmarksPosition, callback: AttributeCallback) {
         const attribute_spaces = constants.attribute_spaces;
         const close_choices = constants.close_choices;
@@ -262,7 +211,7 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
             }
 
             if (search_position != start_position) {
-                seen_text(new LandmarksRange(start_position, search_position));
+                handler.Text(document, new LandmarksRange(start_position, search_position));
             }
 
             start_position = search_position;
@@ -284,8 +233,8 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
                     if (end_name === npos) {
                         // We don't normalize the name when the name is incomplete
 
-                        seen_start_tag_prefix(tag);
-                        seen_start_tag(tag);
+                        handler.StartTagPrefix(document, tag);
+                        handler.StartTag(document, tag);
 
                         start_position = search_position = npos;
                         break;
@@ -311,8 +260,8 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
                                     endTag.name = endTag.all;
                                     endTag.tagID = back();
                                     endTag.state = EndTagState.autoclosedBySibling;
-                                    seen_end_tag_prefix(endTag);
-                                    seen_end_tag(endTag);
+                                    handler.EndTagPrefix(document, endTag);
+                                    handler.EndTag(document, endTag);
                                     elements.pop();
                                 }
                                 break;
@@ -320,9 +269,9 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
                         }
                     }
 
-                    seen_start_tag_prefix(tag);
+                    handler.StartTagPrefix(document, tag);
 
-                    search_position = parseAttributes(end_name, seen_start_tag_attribute);
+                    search_position = parseAttributes(end_name, (attr) => handler.StartTagAttribute(document, attr));
 
                     if (policy.isVoidElement(tagID)) {
                         tag.selfClosingPolicy = SelfClosingPolicy.required;
@@ -336,7 +285,7 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
 
                     const end = findEnd(close, search_position);
                     tag.all = new LandmarksRange(start_position, end);
-                    seen_start_tag(tag);
+                    handler.StartTag(document, tag);
                     start_position = search_position = end;
 
                     if (!tag.isSelfClosing) {
@@ -425,8 +374,8 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
                                     endTag.name = endTag.all;
                                     endTag.tagID = back();
                                     endTag.state = state;
-                                    seen_end_tag_prefix(endTag);
-                                    seen_end_tag(endTag);
+                                    handler.EndTagPrefix(document, endTag);
+                                    handler.EndTag(document, endTag);
                                     elements.pop();
                                 }
                                 // Pop the current element
@@ -447,34 +396,34 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
                 endTag.tagID = tagID;
                 endTag.state = end_state;
 
-                seen_end_tag_prefix(endTag);
+                handler.EndTagPrefix(document, endTag);
 
-                search_position = parseAttributes(end_name, seen_end_tag_attribute);
+                search_position = parseAttributes(end_name, (attr) => handler.EndTagAttribute(document, attr));
 
                 const end = findEnd(close, search_position);
 
                 endTag.all = new LandmarksRange(start_position, end);
 
-                seen_end_tag(endTag);
+                handler.EndTag(document, endTag);
 
                 start_position = search_position = end;
             } else if (choice === constants.open_comment) {
                 // Note that we search from the start of the token so that start and end tokens can overlap
                 // Example: <!--> is a complete comment
                 const end = findEnd(constants.close_comment, search_position);
-                seen_comment(new LandmarksRange(start_position, end));
+                handler.Comment(document, new LandmarksRange(start_position, end));
                 start_position = search_position = end;
             } else if (choice === constants.open_cdata) {
                 const end = findEnd(constants.close_cdata, search_position);
-                seen_cdata(new LandmarksRange(start_position, end));
+                handler.CData(document, new LandmarksRange(start_position, end));
                 start_position = search_position = end;
             } else if (choice === constants.open_processing) {
                 const end = findEnd(constants.close_processing, search_position);
-                seen_processing(new LandmarksRange(start_position, end));
+                handler.Processing(document, new LandmarksRange(start_position, end));
                 start_position = search_position = end;
             } else if (choice === constants.open_declaration) {
                 const end = findEnd(constants.close_declaration, search_position);
-                seen_declaration(new LandmarksRange(start_position, end));
+                handler.Declaration(document, new LandmarksRange(start_position, end));
                 start_position = search_position = end;
             } else {
                 // TODO assert(false);
@@ -483,7 +432,7 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
         } // while
 
         if (search_position != start_position) {
-            seen_text(new LandmarksRange(start_position, search_position));
+            handler.Text(document, new LandmarksRange(start_position, search_position));
         }
 
         // Close the inner contiguous set of elements that are autoclosed by parent
@@ -494,13 +443,13 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
             endTag.name = endTag.all;
             endTag.tagID = back();
             endTag.state = EndTagState.autoclosedByParent;
-            seen_end_tag_prefix(endTag);
-            seen_end_tag(endTag);
+            handler.EndTagPrefix(document, endTag);
+            handler.EndTag(document, endTag);
             elements.pop();
         }
 
         // The parse is "clean" if there are no open elements
-        seen_eof(elements);
+        handler.EOF(document, elements);
     }
 
     return {
