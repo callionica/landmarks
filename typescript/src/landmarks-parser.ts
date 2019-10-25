@@ -54,144 +54,143 @@ function choose(text: string, position: LandmarksPosition, choices: string[]) {
 }
 
 export interface IParser {
-    readonly document: string;
-    parse(): void;
+    parse(document: string): void;
 }
 
-export function LandmarksParser(document: string, policy: LandmarksPolicy, handler: LandmarksHandler): IParser {
+export function LandmarksParser(policy: LandmarksPolicy, handler: LandmarksHandler): IParser {
     const constants = LandmarksParserConstants();
-    const length = document.length;
 
-    function findEnd(term: string, position: LandmarksPosition) {
-        let found = find(document, term, position);
-        if (found != npos) {
-            found += term.length;
+    function parse(document: string) {
+        const length = document.length;
+
+        function findEnd(term: string, position: LandmarksPosition) {
+            let found = find(document, term, position);
+            if (found !== npos) {
+                found += term.length;
+            }
+            return found;
         }
-        return found;
-    }
 
-    function skipSpaces(position: LandmarksPosition) {
-        return findFirstNotOf(document, constants.spaces, position);
-    }
+        function skipSpaces(position: LandmarksPosition) {
+            return findFirstNotOf(document, constants.spaces, position);
+        }
 
-    function parseAttributes(position: LandmarksPosition, callback: AttributeCallback) {
-        const attribute_spaces = constants.attribute_spaces;
-        const close_choices = constants.close_choices;
-        const close = constants.close;
-        const attribute_name_end = constants.attribute_name_end;
-        const attribute_value_end = constants.attribute_value_end;
+        function parseAttributes(position: LandmarksPosition, callback: AttributeCallback) {
+            const attribute_spaces = constants.attribute_spaces;
+            const close_choices = constants.close_choices;
+            const close = constants.close;
+            const attribute_name_end = constants.attribute_name_end;
+            const attribute_value_end = constants.attribute_value_end;
 
-        let search_position: LandmarksPosition = position;
-        let attr: LandmarksAttribute | null = null;
+            let search_position: LandmarksPosition = position;
+            let attr: LandmarksAttribute | null = null;
 
-        while (search_position < length) {
+            while (search_position < length) {
+
+                if (attr) {
+                    callback(attr);
+                    attr = null;
+                }
+
+                search_position = findFirstNotOf(document, attribute_spaces, search_position);
+                if (search_position === npos) {
+                    // Hit the end of the string
+                    break;
+                }
+
+                {
+                    const choice = choose(document, search_position, close_choices);
+                    if (choice === close) {
+                        // We skipped spaces and slashes and we've seen >
+                        // If previous character is slash, we back up since that slash is part of the self-closing token
+                        if (document[search_position - 1] === '/') {
+                            --search_position;
+                        }
+                    }
+
+                    if (choice !== null) {
+                        // Hit the end of the tag
+                        break;
+                    }
+                }
+
+                // Looking at attribute name
+                const name_start = search_position;
+                search_position = findFirstOf(document, attribute_name_end, search_position + 1);
+
+                const name_end = search_position;
+                attr = new LandmarksAttribute(name_start, name_end);
+
+                if (search_position === npos) {
+                    // Hit the end of the string
+                    break;
+                }
+
+                {
+                    const choice = choose(document, search_position, close_choices);
+                    if (choice !== null) {
+                        // Hit the end of the tag
+                        break;
+                    }
+                }
+
+                search_position = skipSpaces(search_position);
+                if (search_position === npos) {
+                    // Hit the end of the string
+                    break;
+                }
+
+                if (document[search_position] !== '=') {
+                    continue;
+                }
+
+                // Looking at attribute value
+
+                search_position = skipSpaces(search_position + 1);
+                if (search_position === npos) {
+                    // Hit the end of the string
+                    break;
+                }
+
+                let found_end_tag = false;
+                let value_start = search_position;
+                let value_end = value_start;
+                const s = document[value_start];
+                if (s === '"' || s === '\'') {
+                    ++value_start;
+                    if (value_start >= length) {
+                        value_start = npos;
+                    }
+                    value_end = find(document, s, value_start);
+                    if (value_end !== npos) {
+                        search_position = value_end + 1;
+                    } else {
+                        search_position = value_end;
+                    }
+                } else {
+                    search_position = findFirstOf(document, attribute_value_end, search_position);
+                    value_end = search_position;
+                    if (value_end !== npos) {
+                        var e = document[value_end];
+                        found_end_tag = (e === '>');
+                    }
+                }
+
+                attr.value = new LandmarksRange(value_start, value_end);
+                attr.all = new LandmarksRange(name_start, search_position);
+
+                if (found_end_tag) {
+                    break;
+                }
+            }
 
             if (attr) {
                 callback(attr);
                 attr = null;
             }
 
-            search_position = findFirstNotOf(document, attribute_spaces, search_position);
-            if (search_position === npos) {
-                // Hit the end of the string
-                break;
-            }
-
-            {
-                const choice = choose(document, search_position, close_choices);
-                if (choice === close) {
-                    // We skipped spaces and slashes and we've seen >
-                    // If previous character is slash, we back up since that slash is part of the self-closing token
-                    if (document[search_position - 1] === '/') {
-                        --search_position;
-                    }
-                }
-
-                if (choice !== null) {
-                    // Hit the end of the tag
-                    break;
-                }
-            }
-
-            // Looking at attribute name
-            const name_start = search_position;
-            search_position = findFirstOf(document, attribute_name_end, search_position + 1);
-
-            const name_end = search_position;
-            attr = new LandmarksAttribute(name_start, name_end);
-
-            if (search_position === npos) {
-                // Hit the end of the string
-                break;
-            }
-
-            {
-                const choice = choose(document, search_position, close_choices);
-                if (choice !== null) {
-                    // Hit the end of the tag
-                    break;
-                }
-            }
-
-            search_position = skipSpaces(search_position);
-            if (search_position === npos) {
-                // Hit the end of the string
-                break;
-            }
-
-            if (document[search_position] !== '=') {
-                continue;
-            }
-
-            // Looking at attribute value
-
-            search_position = skipSpaces(search_position + 1);
-            if (search_position === npos) {
-                // Hit the end of the string
-                break;
-            }
-
-            let found_end_tag = false;
-            let value_start = search_position;
-            let value_end = value_start;
-            const s = document[value_start];
-            if (s === '"' || s === '\'') {
-                ++value_start;
-                if (value_start >= length) {
-                    value_start = npos;
-                }
-                value_end = find(document, s, value_start);
-                if (value_end !== npos) {
-                    search_position = value_end + 1;
-                } else {
-                    search_position = value_end;
-                }
-            } else {
-                search_position = findFirstOf(document, attribute_value_end, search_position);
-                value_end = search_position;
-                if (value_end !== npos) {
-                    var e = document[value_end];
-                    found_end_tag = (e === '>');
-                }
-            }
-
-            attr.value = new LandmarksRange(value_start, value_end);
-            attr.all = new LandmarksRange(name_start, search_position);
-
-            if (found_end_tag) {
-                break;
-            }
+            return search_position;
         }
-
-        if (attr) {
-            callback(attr);
-            attr = null;
-        }
-
-        return search_position;
-    }
-
-    function parse() {
         const open = constants.open;
         const open_choices = constants.open_choices;
         const element_name_end = constants.element_name_end;
@@ -453,7 +452,6 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
     }
 
     return {
-        document,
         parse,
     };
 }

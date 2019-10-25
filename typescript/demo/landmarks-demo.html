@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset='utf-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
@@ -11,11 +12,13 @@
         import { html5 } from "../js/landmarks-policy-html5.js";
         import { Logger } from "../js/landmarks-handler.js";
         var handler = new Logger();
-        var parser = LandmarksParser("<TEST><i>X</o></test", html5, handler);
-        parser.parse();
+        var parser = LandmarksParser(html5, handler);
+        parser.parse(`<p>Hello<p><self/><TEST x=1 y="2" z='3'><i>X</i></test`);
     </script>
 </head>
+
 <body>
-    
+
 </body>
+
 </html>>
