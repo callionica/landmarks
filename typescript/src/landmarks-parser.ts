@@ -53,7 +53,12 @@ function choose(text: string, position: LandmarksPosition, choices: string[]) {
     return null;
 }
 
-export function LandmarksParser(document: string, policy: LandmarksPolicy, handler: LandmarksHandler) {
+export interface IParser {
+    readonly document: string;
+    parse(): void;
+}
+
+export function LandmarksParser(document: string, policy: LandmarksPolicy, handler: LandmarksHandler): IParser {
     let constants = LandmarksParserConstants();
     let length = document.length;
 
@@ -387,7 +392,7 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
                     tagID = UnknownTagID;
                 }
 
-                var end_state = EndTagState.floating;
+                var end_state = EndTagState.unmatched;
 
                 if (elements.length > 0) {
                     // If the end tag is a wildcard, it takes on the tag ID of the last open element
@@ -397,7 +402,7 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
 
                     if (policy.isSameElement(tagID, back())) {
                         // We've found a matching end tag with no children
-                        end_state = EndTagState.matching;
+                        end_state = EndTagState.matched;
                         elements.pop();
                     } else {
                         // Now we need to look thru the open elements
@@ -428,7 +433,7 @@ export function LandmarksParser(document: string, policy: LandmarksPolicy, handl
                                     elements.pop();
                                 }
                                 // Pop the current element
-                                end_state = EndTagState.matching;
+                                end_state = EndTagState.matched;
                                 elements.pop();
                             } else if (landmark || autoclose) {
                                 continue;

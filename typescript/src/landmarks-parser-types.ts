@@ -5,9 +5,9 @@ export type LandmarksPosition = number;
 // The parsing code assumes that npos is a large positive integer
 export const npos: LandmarksPosition = Number.MAX_SAFE_INTEGER;
 
-export enum EndTagState {
-    floating = "floating", // No matching start tag
-    matching = "matching", // Matching start tag
+export const enum EndTagState {
+    unmatched = "unmatched", // No matching start tag
+    matched = "matched", // Matching start tag
     autoclosedByParent = "autoclosedByParent", // Closed when parent closed (or EOF)
     autoclosedBySibling = "autoclosedBySibling", // Closed when specific sibling opened
     autoclosedByAncestor = "autoclosedByAncestor", // Closed when specific ancestor closed
@@ -15,8 +15,8 @@ export enum EndTagState {
 
 export function isAutoclosed(state: EndTagState): boolean {
     switch (state) {
-        case EndTagState.floating: // fallthrough
-        case EndTagState.matching:
+        case EndTagState.unmatched: // fallthrough
+        case EndTagState.matched:
             return false;
         case EndTagState.autoclosedByParent: // fallthrough
         case EndTagState.autoclosedBySibling: // fallthrough
@@ -27,13 +27,13 @@ export function isAutoclosed(state: EndTagState): boolean {
     return false;
 }
 
-export enum SelfClosingPolicy {
+export const enum SelfClosingPolicy {
     allowed = "allowed",
     prohibited = "prohibited",
     required = "required",
 };
 
-export enum SelfClosingMarker {
+export const enum SelfClosingMarker {
     absent = "absent",
     present = "present",
 };
@@ -108,7 +108,7 @@ export class LandmarksStartTag extends LandmarksStartTagPrefix {
 };
 
 export class LandmarksEndTagPrefix extends LandmarksTagPrefix {
-    state: EndTagState = EndTagState.floating;
+    state: EndTagState = EndTagState.unmatched;
 };
 
 export class LandmarksEndTag extends LandmarksEndTagPrefix {
