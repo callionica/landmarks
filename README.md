@@ -1,9 +1,9 @@
 # Landmarks
 Landmarks is a customizable parser for HTML, XML, and other similar structured languages.
 
-It is delivered as C++ source code that can be simply integrated with your project.
+There is a stable C++ version and an experimental TypeScript version, both available with source for easy integration into your project.
 
-Landmarks is a complete, standalone implementation of a markup language parser using standard C++.
+Landmarks is a complete, standalone implementation of a markup language parser using standard C++ or TypeScript.
 
 Landmarks is not a wrapper for any other library and its code is not based on any other parser.
 
