@@ -54,13 +54,13 @@ function choose(text: string, position: LandmarksPosition, choices: string[]) {
 }
 
 export interface IParser {
-    parse(document: string): void;
+    parse(document: string, handler: LandmarksHandler): void;
 }
 
-export function LandmarksParser(policy: LandmarksPolicy, handler: LandmarksHandler): IParser {
+export function LandmarksParser(policy: LandmarksPolicy): IParser {
     const constants = LandmarksParserConstants();
 
-    function parse(document: string) {
+    function parse(document: string, handler: LandmarksHandler) {
         const length = document.length;
 
         function findEnd(term: string, position: LandmarksPosition) {
