@@ -11,6 +11,8 @@ import { TagID, LandmarksPosition, npos } from "./landmarks-parser-types.js";
 // Which elements have content that is not parsed as markup
 // Which elements can be autoclosed or autoclose other elements
 export interface LandmarksPolicy {
+    readonly spaces : string;
+
     // pos is the position after markup < or </
     // If the text following that markup represents a valid element name, return the position of the first character
     // of the name, otherwise return npos.
@@ -69,6 +71,7 @@ export interface LandmarksPolicy {
 type TagAndSiblings = [string, string[]];
 
 export interface LandmarksPolicyData {
+    Spaces: string;
     VoidElements: readonly string[];
     ContentElements: readonly string[];
     OpaqueElements: readonly string[];
@@ -91,6 +94,10 @@ export class Policy implements LandmarksPolicy {
 
     constructor(data: LandmarksPolicyData) {
         this.data = data;
+    }
+
+    get spaces() : string {
+        return this.data.Spaces;
     }
 
     getElementNameStart(text: string, pos: number): number {

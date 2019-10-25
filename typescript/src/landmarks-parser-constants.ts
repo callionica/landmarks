@@ -1,16 +1,16 @@
 // ALL RIGHTS RESERVED
 
-export function LandmarksParserConstants() {
-    /*
-     The space characters, for the purposes of this specification, are U+0020 SPACE, "tab" (U+0009), "LF" (U+000A), "FF" (U+000C), and "CR" (U+000D).
-     http://www.w3.org/html/wg/drafts/html/master/single-page.html#space-character
-     */
-    const spaces = " \t\n\f\r";
+/*
+The space characters, for the purposes of this specification, are U+0020 SPACE, "tab" (U+0009), "LF" (U+000A), "FF" (U+000C), and "CR" (U+000D).
+http://www.w3.org/html/wg/drafts/html/master/single-page.html#space-character
+*/
+const htmlSpaces = " \t\n\f\r";
 
+export function LandmarksParserConstants(spaces: string = htmlSpaces) {
     /*
      As in HTML5, a '/' in the middle of an attribute name creates a new attribute name and is not part of the name
      A '/' anywhere in an unquoted attribute value is part of the value (it doesn't create a new value or name and it is never part of a self-closing tag)
-     */
+    */
     const attribute_spaces = spaces + "/";
     const attribute_name_end = attribute_spaces + ">=";
     const attribute_value_end = spaces + ">";

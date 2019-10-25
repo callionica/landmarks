@@ -58,7 +58,7 @@ export interface IParser {
 }
 
 export function LandmarksParser(policy: LandmarksPolicy): IParser {
-    const constants = LandmarksParserConstants();
+    const constants = LandmarksParserConstants(policy.spaces);
 
     function parse(document: string, handler: LandmarksHandler) {
         const length = document.length;
