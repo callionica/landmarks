@@ -70,6 +70,9 @@ export interface LandmarksPolicy {
 
 type TagAndSiblings = [string, string[]];
 
+/*
+LandmarksPolicyData is a slightly easier interface for defining parser policies
+ */
 export interface LandmarksPolicyData {
     spaces: string;
     voidElements: readonly string[];

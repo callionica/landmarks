@@ -4,7 +4,7 @@
 The space characters, for the purposes of this specification, are U+0020 SPACE, "tab" (U+0009), "LF" (U+000A), "FF" (U+000C), and "CR" (U+000D).
 http://www.w3.org/html/wg/drafts/html/master/single-page.html#space-character
 */
-const htmlSpaces = " \t\n\f\r";
+export const htmlSpaces = " \t\n\f\r";
 
 export function LandmarksParserConstants(spaces: string = htmlSpaces) {
     /*
@@ -14,6 +14,7 @@ export function LandmarksParserConstants(spaces: string = htmlSpaces) {
     const attribute_spaces = spaces + "/";
     const attribute_name_end = attribute_spaces + ">=";
     const attribute_value_end = spaces + ">";
+    const attribute_value_delimiters = `"'`;
 
     const element_name_end = attribute_spaces + ">";
 
@@ -43,6 +44,7 @@ export function LandmarksParserConstants(spaces: string = htmlSpaces) {
         attribute_spaces,
         attribute_name_end,
         attribute_value_end,
+        attribute_value_delimiters,
         element_name_end,
         open,
         open_end_tag,

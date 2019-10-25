@@ -81,6 +81,7 @@ export function LandmarksParser(policy: LandmarksPolicy): IParser {
             const close = constants.close;
             const attribute_name_end = constants.attribute_name_end;
             const attribute_value_end = constants.attribute_value_end;
+            const attribute_value_delimiters = constants.attribute_value_delimiters;
 
             let search_position: LandmarksPosition = position;
             let attr: LandmarksAttribute | null = null;
@@ -156,12 +157,12 @@ export function LandmarksParser(policy: LandmarksPolicy): IParser {
                 let value_start = search_position;
                 let value_end = value_start;
                 const s = document[value_start];
-                if (s === '"' || s === '\'') {
+                if (attribute_value_delimiters.includes(s)) {
                     ++value_start;
                     if (value_start >= length) {
                         value_start = npos;
                     }
-                    value_end = find(document, s, value_start);
+                    value_end = find(document, s, value_start); // Currently require end quote to be same as start quote as in HTML
                     if (value_end !== npos) {
                         search_position = value_end + 1;
                     } else {
