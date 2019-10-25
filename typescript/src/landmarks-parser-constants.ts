@@ -14,6 +14,12 @@ export function LandmarksParserConstants(spaces: string = htmlSpaces) {
     const attribute_spaces = spaces + "/";
     const attribute_name_end = attribute_spaces + ">=";
     const attribute_value_end = spaces + ">";
+    /*
+    Can customize the delimiters (quote marks) for an attribute value here,
+    but note that the parser currently requires the closing delimiter
+    to be the same as the opening delimiter (following HTML) so there
+    is limited value in including open/close quote pairs currently
+    */
     const attribute_value_delimiters = `"'`;
 
     const element_name_end = attribute_spaces + ">";
