@@ -3,7 +3,7 @@
 // by ignoring XML namespaces and just using the localName of interesting
 // elements, by only handling color and not region/animation/metadata, by limiting the time format.
 
-import { LandmarksHandler } from "../landmarks-handler.js"
+import { LandmarksHandler, BaseHandler } from "../landmarks-handler.js"
 import { LandmarksRange, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksEndTag, LandmarksStartTag, LandmarksEndTagPrefix, TagID, EndTagState } from "../landmarks-parser-types.js";
 import { LandmarksParser } from "../landmarks-parser.js";
 import { xml } from "../landmarks-policy-ml.js";
@@ -23,7 +23,7 @@ function padTime(time : string) {
     return time;
 }
 
-class TTML implements LandmarksHandler {
+class TTML extends BaseHandler {
     webVTT: string = "";
 
     private styles: Style[] = [];
@@ -41,22 +41,6 @@ class TTML implements LandmarksHandler {
         if (this.currentSubtitle) {
             this.currentSubtitle.content += range.getText(document);
         }
-    }
-
-    Comment(document: string, range: LandmarksRange) {
-        // Ignore
-    }
-
-    CData(document: string, range: LandmarksRange) {
-        // Ignore
-    }
-
-    Processing(document: string, range: LandmarksRange) {
-        // Ignore
-    }
-
-    Declaration(document: string, range: LandmarksRange) {
-        // Ignore
     }
 
     StartTagPrefix(document: string, tag: LandmarksStartTagPrefix) {
@@ -133,14 +117,6 @@ class TTML implements LandmarksHandler {
         }
     }
 
-    EndTagPrefix(document: string, tag: LandmarksEndTagPrefix) {
-        // Ignore
-    }
-
-    EndTagAttribute(document: string, attribute: LandmarksAttribute) {
-        // Ignore
-    }
-
     EndTag(document: string, tag: LandmarksEndTag) {
         if (tag.state === EndTagState.unmatched) {
             return;
@@ -162,13 +138,13 @@ class TTML implements LandmarksHandler {
 
     EOF(document: string, open_elements: TagID[]) {
         const vtt = this.subtitles.map((subtitle, n) => {
-            let wrapStart = "";
-            let wrapEnd = "";
-            if (subtitle.color) {
-                wrapStart = `<c.${subtitle.color}>`;
-				wrapEnd = `</c>`;
+            let styleStart = "";
+            let styleEnd = "";
+            if (subtitle.color && subtitle.color !== "white") {
+                styleStart = `<c.${subtitle.color}>`;
+				styleEnd = `</c>`;
             }
-            return `${n+1}\n${subtitle.start} --> ${subtitle.end}\n${wrapStart}${subtitle.content}${wrapEnd}\n\n`;
+            return `${n+1}\n${subtitle.start} --> ${subtitle.end}\n${styleStart}${subtitle.content}${styleEnd}\n\n`;
         });
         this.webVTT = "WEBVTT\n\n" + vtt.join("");
     }
