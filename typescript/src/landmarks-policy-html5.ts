@@ -1,8 +1,10 @@
 import { LandmarksPolicy, LandmarksPolicyData, Policy } from "./landmarks-policy.js"
 
+const spaces = " \t\n\f\r";
+
 function html5_() : LandmarksPolicy {
     return new Policy({
-        spaces: " \t\n\f\r",
+        spaces: spaces,
         voidElements: ["area", "base", "br", "col", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"],
         contentElements: [
             "html",
@@ -157,3 +159,14 @@ function html5_() : LandmarksPolicy {
 }
 
 export const html5 = html5_();
+
+export const xml = new Policy({
+    spaces: spaces,
+    voidElements: [],
+    contentElements: [],
+    opaqueElements: [],
+    autoclosingEndTags: [],
+    autocloseByParent: [],
+    autocloseBySibling: [],
+    wildcardEndTags: [],
+});

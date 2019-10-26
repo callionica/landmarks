@@ -83,7 +83,7 @@ class Nameable {
         return this.name.isComplete;
     }
 
-    getQualifiedName(document: string) {
+    getQualifiedName(document: string) : [string, string] {
         const name = this.name.getText(document);
         const prefixEnd = name.indexOf(":");
         let prefix = "";

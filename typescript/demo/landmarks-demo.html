@@ -9,10 +9,10 @@
     <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
     <script type="module">
         import { LandmarksParser } from "../js/landmarks-parser.js";
-        import { html5 } from "../js/landmarks-policy-html5.js";
+        import { html5, xml } from "../js/landmarks-policy-html5.js";
         import { Logger } from "../js/landmarks-handler.js";
         var handler = new Logger();
-        var parser = LandmarksParser(html5);
+        var parser = LandmarksParser(xml);
         parser.parse(`<p>Hello<p><ns:self/><TEST x=1 y="2" z='3'><i>X</i></test`, handler);
     </script>
 </head>
