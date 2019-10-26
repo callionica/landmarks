@@ -14,7 +14,7 @@ type Span = { name: "span", color: string };
 type Other = { name: "other", localName: string };
 type Element = Style | Subtitle | Span | Other;
 
-function padTime(time : string) {
+function padTime(time: string) {
     // WEBVTT has exactly 3-digit milliseconds, add zeroes if we have fewer digits
     var pieces = time.split(".");
     if ((pieces.length === 2) && (pieces[1].length < 3)) {
@@ -46,7 +46,7 @@ class TTML extends BaseHandler {
     StartTagPrefix(document: string, tag: LandmarksStartTagPrefix) {
         const qn = tag.getQualifiedName(document);
         let element: Element = { name: "other", localName: qn.localName };
-        
+
         switch (qn.localName) {
             case "style":
                 element = { name: "style", id: "", color: "" };
@@ -142,9 +142,9 @@ class TTML extends BaseHandler {
             let styleEnd = "";
             if (subtitle.color && subtitle.color !== "white") {
                 styleStart = `<c.${subtitle.color}>`;
-				styleEnd = `</c>`;
+                styleEnd = `</c>`;
             }
-            return `${n+1}\n${subtitle.start} --> ${subtitle.end}\n${styleStart}${subtitle.content}${styleEnd}\n\n`;
+            return `${n + 1}\n${subtitle.start} --> ${subtitle.end}\n${styleStart}${subtitle.content}${styleEnd}\n\n`;
         });
         this.webVTT = "WEBVTT\n\n" + vtt.join("");
     }
