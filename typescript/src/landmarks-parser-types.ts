@@ -83,7 +83,7 @@ class Nameable {
         return this.name.isComplete;
     }
 
-    getQualifiedName(document: string) : [string, string] {
+    getQualifiedName(document: string) : { prefix: string, localName: string } {
         const name = this.name.getText(document);
         const prefixEnd = name.indexOf(":");
         let prefix = "";
@@ -92,7 +92,7 @@ class Nameable {
             prefix = name.substr(0, prefixEnd);
             localName = name.substr(prefixEnd + 1);
         }
-        return [prefix, localName];
+        return { prefix, localName };
     }
 }
 
