@@ -226,10 +226,7 @@ export function LandmarksParser(policy: LandmarksPolicy): IParser {
                     const start_name = start_name_o;
                     const end_name = findFirstOf(document, element_name_end, start_name);
 
-                    const tag = new LandmarksStartTag();
-                    tag.all = new LandmarksRange(start_position, end_name);
-                    tag.name = new LandmarksRange(start_name, end_name);
-
+                    const tag = new LandmarksStartTag(start_position, start_name, end_name);
                     if (end_name === npos) {
                         // We don't normalize the name when the name is incomplete
 
@@ -255,9 +252,7 @@ export function LandmarksParser(policy: LandmarksPolicy): IParser {
                                 let count = elements.length - (index - 1);
                                 while (count--) {
                                     const t = back();
-                                    const endTag = new LandmarksEndTag();
-                                    endTag.all = new LandmarksRange(start_position, start_position);
-                                    endTag.name = endTag.all;
+                                    const endTag = new LandmarksEndTag(start_position, start_position, start_position);
                                     endTag.tagID = back();
                                     endTag.state = EndTagState.autoclosedBySibling;
                                     handler.EndTagPrefix(document, endTag);
@@ -369,9 +364,7 @@ export function LandmarksParser(policy: LandmarksPolicy): IParser {
                                 // or the current end tag is a landmark
                                 while (!policy.isSameElement(back(), tagID)) {
                                     // Close all the autoclosing elements
-                                    const endTag = new LandmarksEndTag();
-                                    endTag.all = new LandmarksRange(start_position, start_position);
-                                    endTag.name = endTag.all;
+                                    const endTag = new LandmarksEndTag(start_position, start_position, start_position);
                                     endTag.tagID = back();
                                     endTag.state = state;
                                     handler.EndTagPrefix(document, endTag);
@@ -390,9 +383,7 @@ export function LandmarksParser(policy: LandmarksPolicy): IParser {
                     }
                 }
 
-                const endTag = new LandmarksEndTag();
-                endTag.all = new LandmarksRange(start_position, end_name);
-                endTag.name = new LandmarksRange(start_name, end_name);
+                const endTag = new LandmarksEndTag(start_position, start_name, end_name);
                 endTag.tagID = tagID;
                 endTag.state = end_state;
 
@@ -438,9 +429,7 @@ export function LandmarksParser(policy: LandmarksPolicy): IParser {
         // Close the inner contiguous set of elements that are autoclosed by parent
         while ((elements.length > 0) && policy.isAutocloseByParent(back())) {
             // Close all the autoclosing elements
-            const endTag = new LandmarksEndTag();
-            endTag.all = new LandmarksRange(search_position, search_position);
-            endTag.name = endTag.all;
+            const endTag = new LandmarksEndTag(search_position, search_position, search_position);
             endTag.tagID = back();
             endTag.state = EndTagState.autoclosedByParent;
             handler.EndTagPrefix(document, endTag);

@@ -57,6 +57,10 @@ export class LandmarksRange {
         return this.end !== npos;
     }
 
+    get isEmpty() : boolean {
+        return (this.start === npos) || this.start === this.end;
+    }
+
     getText(document: string) : string {
         if (this.start === npos) {
             return "";
@@ -64,15 +68,15 @@ export class LandmarksRange {
         
         return document.substring(this.start, this.end);
     }
+
+    static invalid = new LandmarksRange(npos, npos);
 };
 
 class Nameable {
-    name: LandmarksRange;
-    all: LandmarksRange;
+    readonly name: LandmarksRange;
 
-    constructor(start: LandmarksPosition, end: LandmarksPosition) {
-        this.name = new LandmarksRange(start, end);
-        this.all = new LandmarksRange(end, end);
+    constructor(name : LandmarksRange) {
+        this.name = name;
     };
 
     get isNameComplete(): boolean {
@@ -93,11 +97,13 @@ class Nameable {
 }
 
 export class LandmarksAttribute extends Nameable {
+    all: LandmarksRange;
     value: LandmarksRange;
-    
-    constructor(start: LandmarksPosition, end: LandmarksPosition) {
-        super(start, end);
-        this.value = new LandmarksRange(start, end);
+
+    constructor(startName: LandmarksPosition, endName: LandmarksPosition) {
+        super(new LandmarksRange(startName, endName));
+        this.all = this.name;
+        this.value = new LandmarksRange(this.name.end, this.name.end);
     };
 
     get isComplete(): boolean {
@@ -109,10 +115,12 @@ export type TagID = string;
 export const UnknownTagID : TagID = "(unknown)";
 
 export class LandmarksTagPrefix extends Nameable {
-    tagID: TagID = "";
-    
-    constructor() {
-        super(npos, npos);
+    all: LandmarksRange;
+    tagID: TagID = UnknownTagID;
+
+    constructor(start: LandmarksPosition, startName: LandmarksPosition, endName: LandmarksPosition) {
+        super(new LandmarksRange(startName, endName));
+        this.all = new LandmarksRange(start, endName);
     }
 };
 
