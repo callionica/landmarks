@@ -8,10 +8,11 @@ import { LandmarksRange, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksE
 import { LandmarksParser } from "../landmarks-parser";
 import { xml } from "../landmarks-policy-ml";
 
-type Style = { id: string, color: string };
-type Subtitle = { start: string, end: string, style: string, color: string, content: string };
-type Span = { color: string };
-type Element = { name: string, data: Style | Subtitle | Span | undefined };
+type Style = { name: "style", id: string, color: string };
+type Subtitle = { name: "p", start: string, end: string, style: string, color: string, content: string };
+type Span = { name: "span", color: string };
+type Other = { name: "other", localName: string };
+type Element = Style | Subtitle | Span | Other;
 
 function padTime(time : string) {
     // WEBVTT has exactly 3-digit milliseconds, add zeroes if we have fewer digits
@@ -29,7 +30,6 @@ class TTML implements LandmarksHandler {
     private subtitles: Subtitle[] = [];
 
     private currentSubtitle: Subtitle | undefined;
-    private currentStyle: Style | undefined;
 
     private elements: Element[] = [];
 
@@ -61,20 +61,20 @@ class TTML implements LandmarksHandler {
 
     StartTagPrefix(document: string, tag: LandmarksStartTagPrefix) {
         const qn = tag.getQualifiedName(document);
-        const element: Element = { name: qn.localName, data: undefined };
-        this.elements.push(element);
+        let element: Element = { name: "other", localName: qn.localName };
+        
         switch (qn.localName) {
             case "style":
-                element.data = { id: "", color: "" };
-                this.styles.push(element.data);
+                element = { name: "style", id: "", color: "" };
+                this.styles.push(element);
                 break;
             case "p":
-                element.data = { start: "", end: "", style: "", color: "", content: "" };
-                this.subtitles.push(element.data);
-                this.currentSubtitle = element.data;
+                element = { name: "p", start: "", end: "", style: "", color: "", content: "" };
+                this.subtitles.push(element);
+                this.currentSubtitle = element;
                 break;
             case "span":
-                element.data = { color: "" };
+                element = { name: "span", color: "" };
                 break;
             case "br":
                 if (this.currentSubtitle) {
@@ -82,48 +82,46 @@ class TTML implements LandmarksHandler {
                 }
                 break;
         }
+        this.elements.push(element);
     }
 
     StartTagAttribute(document: string, attribute: LandmarksAttribute) {
         const qn = attribute.getQualifiedName(document);
         const e = this.currentElement;
         if (e.name === "style") {
-            const style: Style = e.data as Style;
             switch (qn.localName) {
                 case "id":
-                    style.id = attribute.value.getText(document);
+                    e.id = attribute.value.getText(document);
                     break;
                 case "color":
-                    style.color = attribute.value.getText(document);
+                    e.color = attribute.value.getText(document);
                     break;
             }
         } else if (e.name === "p") {
-            const subtitle: Subtitle = e.data as Subtitle;
             switch (qn.localName) {
                 case "begin":
-                    subtitle.start = padTime(attribute.value.getText(document));
+                    e.start = padTime(attribute.value.getText(document));
                     break;
                 case "end":
-                    subtitle.end = padTime(attribute.value.getText(document));
+                    e.end = padTime(attribute.value.getText(document));
                     break;
                 case "style":
-                    subtitle.style = attribute.value.getText(document);
-                    const style = this.styles.find(style => style.id === subtitle.style);
+                    e.style = attribute.value.getText(document);
+                    const style = this.styles.find(style => style.id === e.style);
                     if (style) {
-                        subtitle.color = style.color;
+                        e.color = style.color;
                     }
                     break;
             }
         } else if (e.name === "span") {
-            const span: Span = e.data as Span;
             switch (qn.localName) {
                 case "color":
-                    span.color = attribute.value.getText(document);
+                    e.color = attribute.value.getText(document);
                     break;
             }
 
-            if (span.color && this.currentSubtitle) {
-                this.currentSubtitle.content += `<c.${span.color}>`;
+            if (e.color && this.currentSubtitle) {
+                this.currentSubtitle.content += `<c.${e.color}>`;
             }
         }
     }
@@ -147,13 +145,12 @@ class TTML implements LandmarksHandler {
 
         const e = this.currentElement;
         if (e.name === "span") {
-            const span: Span = e.data as Span;
-            if (span.color && this.currentSubtitle) {
+            if (e.color && this.currentSubtitle) {
                 this.currentSubtitle.content += `</c>`;
             }
         }
 
-        if (this.currentSubtitle === this.currentElement.data) {
+        if (this.currentSubtitle === this.currentElement) {
             this.currentSubtitle = undefined;
         }
 
