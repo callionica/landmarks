@@ -3,10 +3,10 @@
 // by ignoring XML namespaces and just using the localName of interesting
 // elements, by only handling color and not region/animation/metadata, by limiting the time format.
 
-import { LandmarksHandler } from "../landmarks-handler"
-import { LandmarksRange, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksEndTag, LandmarksStartTag, LandmarksEndTagPrefix, TagID, EndTagState } from "../landmarks-parser-types";
-import { LandmarksParser } from "../landmarks-parser";
-import { xml } from "../landmarks-policy-ml";
+import { LandmarksHandler } from "../landmarks-handler.js"
+import { LandmarksRange, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksEndTag, LandmarksStartTag, LandmarksEndTagPrefix, TagID, EndTagState } from "../landmarks-parser-types.js";
+import { LandmarksParser } from "../landmarks-parser.js";
+import { xml } from "../landmarks-policy-ml.js";
 
 type Style = { name: "style", id: string, color: string };
 type Subtitle = { name: "p", start: string, end: string, style: string, color: string, content: string };
@@ -127,7 +127,10 @@ class TTML implements LandmarksHandler {
     }
 
     StartTag(document: string, tag: LandmarksStartTag) {
-        // Ignore
+        if (tag.isSelfClosing) {
+            // There won't be an EndTag to remove the item from the stack
+            this.elements.pop();
+        }
     }
 
     EndTagPrefix(document: string, tag: LandmarksEndTagPrefix) {
