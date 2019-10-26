@@ -1,8 +1,11 @@
+// ALL RIGHTS RESERVED
+
 import { LandmarksPolicy, LandmarksPolicyData, Policy } from "./landmarks-policy.js"
+import { LandmarksRange } from "./landmarks-parser-types.js";
 
 const spaces = " \t\n\f\r";
 
-function html5_() : LandmarksPolicy {
+function html5_(): LandmarksPolicy {
     return new Policy({
         spaces: spaces,
         voidElements: ["area", "base", "br", "col", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"],
@@ -158,9 +161,9 @@ function html5_() : LandmarksPolicy {
     });
 }
 
-export const html5 = html5_();
+export const html5: LandmarksPolicy = html5_();
 
-export const xml = new Policy({
+export const xml: LandmarksPolicy = new Policy({
     spaces: spaces,
     voidElements: [],
     contentElements: [],
