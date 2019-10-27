@@ -70,7 +70,7 @@ class LandmarksString {
 }
 
 type Style = { name: "style", id: string, color: string };
-type Subtitle = { name: "p", start: string, end: string, style: string, color: string, content: LandmarksString };
+type Subtitle = { name: "p", begin: string, end: string, style: string, color: string, content: LandmarksString };
 type Span = { name: "span", style: string, color: string };
 type Other = { name: "other", localName: string };
 type Element = Style | Subtitle | Span | Other;
@@ -127,7 +127,7 @@ class TTML extends BaseHandler {
                 break;
             case "p":
                 if (this.seenBody) {
-                    element = { name: "p", start: "", end: "", style: "", color: "", content: new LandmarksString("") };
+                    element = { name: "p", begin: "", end: "", style: "", color: "", content: new LandmarksString("") };
                     this.subtitles.push(element);
                     this.currentSubtitle = element;
                 }
@@ -153,22 +153,16 @@ class TTML extends BaseHandler {
         if (e.name === "style") {
             switch (qn.localName) {
                 case "id":
-                    e.id = attribute.value.getText(document);
-                    break;
                 case "color":
-                    e.color = attribute.value.getText(document);
+                    e[qn.localName] = attribute.value.getText(document);
                     break;
             }
         } else if (e.name === "p") {
             switch (qn.localName) {
                 case "begin":
-                    e.start = attribute.value.getText(document);
-                    break;
                 case "end":
-                    e.end = attribute.value.getText(document);
-                    break;
                 case "color":
-                    e.color = attribute.value.getText(document);
+                    e[qn.localName] = attribute.value.getText(document);
                     break;
                 case "style":
                     e.style = attribute.value.getText(document);
@@ -235,7 +229,7 @@ class TTML extends BaseHandler {
                 styleStart = `<c.${subtitle.color}>`;
                 styleEnd = `</c>`;
             }
-            return `${n + 1}\n${webvttTime(subtitle.start)} --> ${webvttTime(subtitle.end)}\n${styleStart}${subtitle.content.value}${styleEnd}\n\n`;
+            return `${n + 1}\n${webvttTime(subtitle.begin)} --> ${webvttTime(subtitle.end)}\n${styleStart}${subtitle.content.value}${styleEnd}\n\n`;
         });
         this.webVTT = "WEBVTT\n\n" + vtt.join("");
     }
