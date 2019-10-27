@@ -75,13 +75,22 @@ type Span = { name: "span", style: string, color: string };
 type Other = { name: "other", localName: string };
 type Element = Style | Subtitle | Span | Other;
 
-function padTime(time: string) {
-    // WEBVTT has exactly 3-digit milliseconds, add zeroes if we have fewer digits
-    var pieces = time.split(".");
-    if ((pieces.length === 2) && (pieces[1].length < 3)) {
-        return time + "0".repeat(3 - pieces[1].length);
+function webvttTime(time: string) {
+    const hms = /^((?<h>\d{1,2}):)?(?<m>\d{1,2}):(?<s>\d{1,2})([.](?<ms>\d{1,3}))?$/ig;
+    let match: any = hms.exec(time);
+    if (!match) {
+        const smpte = /^(?<h>\d{2}):(?<m>\d{2}):(?<s>\d{2}):(?<f>\d{2})$/ig;
+        match = smpte.exec(time);
     }
-    return time;
+    if (!match) {
+        return time;
+    }
+    let h = match.groups.h || "00";
+    let m = match.groups.m || "00";
+    let s = match.groups.s || "00";
+    // TODO - frames & framerate
+    let ms = ((match.groups.ms || "000") + "0".repeat(3)).substring(0, 3);
+    return `${h}:${m}:${s}.${ms}`;
 }
 
 class TTML extends BaseHandler {
@@ -153,10 +162,10 @@ class TTML extends BaseHandler {
         } else if (e.name === "p") {
             switch (qn.localName) {
                 case "begin":
-                    e.start = padTime(attribute.value.getText(document));
+                    e.start = attribute.value.getText(document);
                     break;
                 case "end":
-                    e.end = padTime(attribute.value.getText(document));
+                    e.end = attribute.value.getText(document);
                     break;
                 case "color":
                     e.color = attribute.value.getText(document);
@@ -226,7 +235,7 @@ class TTML extends BaseHandler {
                 styleStart = `<c.${subtitle.color}>`;
                 styleEnd = `</c>`;
             }
-            return `${n + 1}\n${subtitle.start} --> ${subtitle.end}\n${styleStart}${subtitle.content.value}${styleEnd}\n\n`;
+            return `${n + 1}\n${webvttTime(subtitle.start)} --> ${webvttTime(subtitle.end)}\n${styleStart}${subtitle.content.value}${styleEnd}\n\n`;
         });
         this.webVTT = "WEBVTT\n\n" + vtt.join("");
     }
