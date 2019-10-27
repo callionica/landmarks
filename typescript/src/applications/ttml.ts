@@ -10,7 +10,7 @@ import { xml } from "../landmarks-policy-ml.js";
 
 type Style = { name: "style", id: string, color: string };
 type Subtitle = { name: "p", start: string, end: string, style: string, color: string, content: string };
-type Span = { name: "span", color: string };
+type Span = { name: "span", style: string, color: string };
 type Other = { name: "other", localName: string };
 type Element = Style | Subtitle | Span | Other;
 
@@ -25,6 +25,8 @@ function padTime(time: string) {
 
 class TTML extends BaseHandler {
     webVTT: string = "";
+
+    private seenBody: boolean = false;
 
     private styles: Style[] = [];
     private subtitles: Subtitle[] = [];
@@ -53,17 +55,22 @@ class TTML extends BaseHandler {
                 this.styles.push(element);
                 break;
             case "p":
-                element = { name: "p", start: "", end: "", style: "", color: "", content: "" };
-                this.subtitles.push(element);
-                this.currentSubtitle = element;
+                if (this.seenBody) {
+                    element = { name: "p", start: "", end: "", style: "", color: "", content: "" };
+                    this.subtitles.push(element);
+                    this.currentSubtitle = element;
+                }
                 break;
             case "span":
-                element = { name: "span", color: "" };
+                element = { name: "span", style: "", color: "" };
                 break;
             case "br":
                 if (this.currentSubtitle) {
                     this.currentSubtitle.content += "\n";
                 }
+                break;
+            case "body":
+                this.seenBody = true;
                 break;
         }
         this.elements.push(element);
@@ -89,6 +96,9 @@ class TTML extends BaseHandler {
                 case "end":
                     e.end = padTime(attribute.value.getText(document));
                     break;
+                case "color":
+                    e.color = attribute.value.getText(document);
+                    break;
                 case "style":
                     e.style = attribute.value.getText(document);
                     const style = this.styles.find(style => style.id === e.style);
@@ -102,15 +112,25 @@ class TTML extends BaseHandler {
                 case "color":
                     e.color = attribute.value.getText(document);
                     break;
-            }
-
-            if (e.color && this.currentSubtitle) {
-                this.currentSubtitle.content += `<c.${e.color}>`;
+                case "style":
+                    e.style = attribute.value.getText(document);
+                    const style = this.styles.find(style => style.id === e.style);
+                    if (style) {
+                        e.color = style.color;
+                    }
+                    break;
             }
         }
     }
 
     StartTag(document: string, tag: LandmarksStartTag) {
+        const e = this.currentElement;
+        if (e.name === "span") {
+            if (e.color && this.currentSubtitle) {
+                this.currentSubtitle.content += `<c.${e.color}>`;
+            }
+        }
+
         if (tag.isSelfClosing) {
             // There won't be an EndTag to remove the item from the stack
             this.elements.pop();
@@ -144,7 +164,7 @@ class TTML extends BaseHandler {
                 styleStart = `<c.${subtitle.color}>`;
                 styleEnd = `</c>`;
             }
-            return `${n + 1}\n${subtitle.start} --> ${subtitle.end}\n${styleStart}${subtitle.content}${styleEnd}\n\n`;
+            return `${n + 1}\n${subtitle.start} --> ${subtitle.end}\n${styleStart}${subtitle.content.trim()}${styleEnd}\n\n`;
         });
         this.webVTT = "WEBVTT\n\n" + vtt.join("");
     }
