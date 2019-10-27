@@ -8,8 +8,69 @@ import { LandmarksRange, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksE
 import { LandmarksParser } from "../landmarks-parser.js";
 import { xml } from "../landmarks-policy-ml.js";
 
+function last(text: string) {
+    return text[text.length - 1];
+}
+
+class LandmarksString {
+    // text is normalized:
+    // it won't start with whitespace
+    // if it contains \n, it's deliberate; \n shouldn't be merged or ignored
+    // space at the end can be merged or ignored
+    private text: string = "";
+    private trailingWhitespace: string = "";
+
+    constructor(text: string) {
+        this.append(text);
+    }
+
+    get value() {
+        if (this.trailingWhitespace != " ") {
+            return this.text + this.trailingWhitespace;
+        }
+        return this.text;
+    }
+
+    append(text: string) {
+        if (text.length <= 0) {
+            return;
+        }
+
+        const normalizedText = text.replace(/\s+/g, " ");
+
+        // If new text starts with space 
+        // & there's no existing trailing whitespace
+        // & there's existing text
+        // then we need to track the new space
+        if ((normalizedText[0] === " ") && (this.trailingWhitespace.length === 0) && (this.text.length)) {
+            this.trailingWhitespace = " ";
+        }
+
+        const trimmed = normalizedText.trim();
+        if (trimmed.length) {
+            this.text += this.trailingWhitespace + trimmed;
+            this.trailingWhitespace = (last(normalizedText) === " ") ? " " : "";;
+        }
+    }
+
+    appendBreak() {
+        if (last(this.trailingWhitespace) === "\n") {
+            this.trailingWhitespace += "\n";
+        } else {
+            this.trailingWhitespace = "\n";
+        }
+    }
+
+    // Use appendCloseTag if you want to add the close tag before any trailing whitespace
+    // Otherwise just use append
+    appendCloseTag(tag: string) {
+        this.text += "</" + tag + ">";
+        // If there was trailingWhitespace it's now after the tag
+    }
+}
+
 type Style = { name: "style", id: string, color: string };
-type Subtitle = { name: "p", start: string, end: string, style: string, color: string, content: string };
+type Subtitle = { name: "p", start: string, end: string, style: string, color: string, content: LandmarksString };
 type Span = { name: "span", style: string, color: string };
 type Other = { name: "other", localName: string };
 type Element = Style | Subtitle | Span | Other;
@@ -41,7 +102,8 @@ class TTML extends BaseHandler {
 
     Text(document: string, range: LandmarksRange) {
         if (this.currentSubtitle) {
-            this.currentSubtitle.content += range.getText(document);
+            const text = range.getText(document);
+            this.currentSubtitle.content.append(text);
         }
     }
 
@@ -56,7 +118,7 @@ class TTML extends BaseHandler {
                 break;
             case "p":
                 if (this.seenBody) {
-                    element = { name: "p", start: "", end: "", style: "", color: "", content: "" };
+                    element = { name: "p", start: "", end: "", style: "", color: "", content: new LandmarksString("") };
                     this.subtitles.push(element);
                     this.currentSubtitle = element;
                 }
@@ -66,7 +128,7 @@ class TTML extends BaseHandler {
                 break;
             case "br":
                 if (this.currentSubtitle) {
-                    this.currentSubtitle.content += "\n";
+                    this.currentSubtitle.content.appendBreak();
                 }
                 break;
             case "body":
@@ -127,7 +189,7 @@ class TTML extends BaseHandler {
         const e = this.currentElement;
         if (e.name === "span") {
             if (e.color && this.currentSubtitle) {
-                this.currentSubtitle.content += `<c.${e.color}>`;
+                this.currentSubtitle.content.append(`<c.${e.color}>`);
             }
         }
 
@@ -145,7 +207,7 @@ class TTML extends BaseHandler {
         const e = this.currentElement;
         if (e.name === "span") {
             if (e.color && this.currentSubtitle) {
-                this.currentSubtitle.content += `</c>`;
+                this.currentSubtitle.content.appendCloseTag("c");
             }
         }
 
@@ -164,7 +226,7 @@ class TTML extends BaseHandler {
                 styleStart = `<c.${subtitle.color}>`;
                 styleEnd = `</c>`;
             }
-            return `${n + 1}\n${subtitle.start} --> ${subtitle.end}\n${styleStart}${subtitle.content.trim()}${styleEnd}\n\n`;
+            return `${n + 1}\n${subtitle.start} --> ${subtitle.end}\n${styleStart}${subtitle.content.value}${styleEnd}\n\n`;
         });
         this.webVTT = "WEBVTT\n\n" + vtt.join("");
     }
