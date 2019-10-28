@@ -9,7 +9,7 @@
 // 4. We can ignore any style information applied on "body", "div", "region" elements and assume that all styles & colors are applied on "p" or "span" elements
 // 5. We can ignore "xml:space" attributes and treat content as "xml:space=default"
 // 6. We can assume that timing information is supplied in "begin" and "end" attributes on "p" elements (not "dur" attributes and not on other elements)
-// 7. We can assume that the time code is HMS (but if it's SMPTE we'll convert by ignoring the frame)
+// 7. We can assume that the time code is HMS (but if it's SMPTE we'll convert by assuming 25 frames per second)
 // 8. We can assume that the timing information is ordered in a way that aligns with WebVTT rules
 // 9. We can rely on the input document being valid or, if invalid, we don't care to be informed
 //
@@ -22,14 +22,20 @@
 // 5. We do not omit a cue class if it covers the entire cue and is for color "white"
 //
 // Keywords: TTML parser, TTML to VTT, TTML to WebVTT, TTML subtitles, subtitle parser, TTML converter
+//
+// An interesting document: http://w3c.github.io/ttml-webvtt-mapping/
 
 import { LandmarksHandler, BaseHandler } from "../landmarks-handler.js"
 import { LandmarksRange, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksEndTag, LandmarksStartTag, LandmarksEndTagPrefix, TagID, EndTagState } from "../landmarks-parser-types.js";
 import { LandmarksParser } from "../landmarks-parser.js";
 import { xml } from "../landmarks-policy-ml.js";
 
-function last(text: string) {
-    return text[text.length - 1];
+function first(text: string, count: number = 1) {
+    return text.substring(0, count);
+}
+
+function last(text: string, count: number = 1) {
+    return text.substring(text.length - count);
 }
 
 class LandmarksString {
@@ -104,18 +110,29 @@ type Element = Style | Subtitle | Span | Other;
 function webvttTime(time: string) {
     const hms = /^((?<h>\d{1,2}):)?(?<m>\d{1,2}):(?<s>\d{1,2})([.](?<ms>\d{1,3}))?$/ig;
     let match: any = hms.exec(time);
+
+    let ms = "000";
     if (!match) {
         const smpte = /^(?<h>\d{2}):(?<m>\d{2}):(?<s>\d{2}):(?<f>\d{2})$/ig;
         match = smpte.exec(time);
+        if (!match) {
+            return time;
+        }
+        const frame = parseInt(match.groups.f, 10);
+        // TODO framerate
+        const framesPerSecond = 25;
+        let fraction = 1000 * frame/framesPerSecond;
+        if (fraction >= 1000) {
+            fraction = 0;
+        }
+        ms = last("000" + fraction, 3);
+    } else {
+        ms = first(match.groups.ms + "000", 3);
     }
-    if (!match) {
-        return time;
-    }
+    
     let h = match.groups.h || "00";
     let m = match.groups.m || "00";
     let s = match.groups.s || "00";
-    // TODO - frames & framerate
-    let ms = ((match.groups.ms || "000") + "0".repeat(3)).substring(0, 3);
     return `${h}:${m}:${s}.${ms}`;
 }
 
