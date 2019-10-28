@@ -17,7 +17,7 @@ export interface LandmarksHandler {
     EndTagAttribute(document: string, attribute: LandmarksAttribute): void;
     EndTag(document: string, tag: LandmarksEndTag): void;
 
-    EOF(document: string, open_elements: readonly TagID[]): void;
+    EndOfInput(document: string, open_elements: readonly TagID[]): void;
 };
 
 export class BaseHandler implements LandmarksHandler {
@@ -35,7 +35,7 @@ export class BaseHandler implements LandmarksHandler {
     EndTagAttribute(document: string, attribute: LandmarksAttribute): void { }
     EndTag(document: string, tag: LandmarksEndTag): void { }
 
-    EOF(document: string, open_elements: readonly TagID[]): void { }
+    EndOfInput(document: string, open_elements: readonly TagID[]): void { }
 }
 
 export class LogHandler implements LandmarksHandler {
@@ -53,5 +53,5 @@ export class LogHandler implements LandmarksHandler {
     EndTagAttribute(document: string, attribute: LandmarksAttribute): void { console.log(attribute); }
     EndTag(document: string, tag: LandmarksEndTag): void { console.log(tag); }
 
-    EOF(document: string, open_elements: readonly TagID[]): void { console.log(open_elements); }
+    EndOfInput(document: string, open_elements: readonly TagID[]): void { console.log(open_elements); }
 }

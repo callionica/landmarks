@@ -504,7 +504,7 @@ export function LandmarksParser(policy: LandmarksPolicy): IParser {
         }
 
         // The parse is "clean" if there are no open elements
-        handler.EOF(document, elements);
+        handler.EndOfInput(document, elements);
     }
 
     return {

@@ -108,7 +108,7 @@ type Span = { name: "span", style: string, color: string };
 type Other = { name: "other", localName: string };
 type Element = Style | Subtitle | Span | Other;
 
-function webvttTime(time: string) {
+function webvttTime(time: string, framesPerSecond: number = 25) {
     const hms = /^((?<h>\d{1,2}):)?(?<m>\d{1,2}):(?<s>\d{1,2})([.](?<ms>\d{1,3}))?$/ig;
     let match: any = hms.exec(time);
 
@@ -120,15 +120,14 @@ function webvttTime(time: string) {
             return time;
         }
         const frame = parseInt(match.groups.f, 10);
-        // TODO framerate
-        const framesPerSecond = 25;
         let fraction = 1000 * frame/framesPerSecond;
         if (fraction >= 1000) {
-            fraction = 0;
+            // Maybe frames per second is wrong
+            fraction = 999;
         }
         ms = last("000" + fraction, 3);
     } else {
-        ms = first((match.groups.ms || "") + "000", 3);
+        ms = first((match.groups.ms || "000") + "000", 3);
     }
     
     let h = match.groups.h || "00";
@@ -265,7 +264,7 @@ class TTML extends BaseHandler {
         this.elements.pop();
     }
 
-    EOF(document: string, open_elements: TagID[]) {
+    EndOfInput(document: string, open_elements: TagID[]) {
         const vtt = this.subtitles.map((subtitle, n) => {
             let styleStart = "";
             let styleEnd = "";
