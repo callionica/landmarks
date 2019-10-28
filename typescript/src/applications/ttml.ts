@@ -205,27 +205,15 @@ class TTML extends BaseHandler {
                 case "begin":
                 case "end":
                 case "color":
-                    e[qn.localName] = attribute.value.getText(document);
-                    break;
                 case "style":
-                    e.style = attribute.value.getText(document);
-                    const style = this.styles.find(style => style.id === e.style);
-                    if (style) {
-                        e.color = style.color;
-                    }
+                    e[qn.localName] = attribute.value.getText(document);
                     break;
             }
         } else if (e.name === "span") {
             switch (qn.localName) {
                 case "color":
-                    e.color = attribute.value.getText(document);
-                    break;
                 case "style":
-                    e.style = attribute.value.getText(document);
-                    const style = this.styles.find(style => style.id === e.style);
-                    if (style) {
-                        e.color = style.color;
-                    }
+                    e[qn.localName] = attribute.value.getText(document);
                     break;
             }
         }
@@ -233,6 +221,14 @@ class TTML extends BaseHandler {
 
     StartTag(document: string, tag: LandmarksStartTag) {
         const e = this.currentElement;
+        
+        if (e.name === "span" || e.name === "p") {
+            const style = this.styles.find(style => style.id === e.style);
+            if (style) {
+                e.color = style.color;
+            }
+        }
+
         if (e.name === "span") {
             if (e.color && this.currentSubtitle) {
                 this.currentSubtitle.content.append(`<c.${e.color}>`);
