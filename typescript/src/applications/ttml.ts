@@ -221,10 +221,10 @@ class TTML extends BaseHandler {
 
     StartTag(document: string, tag: LandmarksStartTag) {
         const e = this.currentElement;
-        
+
         if (e.name === "span" || e.name === "p") {
             const style = this.styles.find(style => style.id === e.style);
-            if (style) {
+            if (style && style.color) {
                 e.color = style.color;
             }
         }
