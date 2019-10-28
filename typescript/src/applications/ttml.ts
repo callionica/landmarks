@@ -1,16 +1,17 @@
 // A simple TTML subtitle parser that converts TTML to WEBVTT
 //
-// ttmlToWebVTT(string) : string converts a TTML string to a WebVTT string
+// "ttmlToWebVTT(string) : string" converts a TTML string to a WebVTT string
 //
 // We make some simplifying assumptions about the input TTML:
 // 1. We can ignore XML namespaces and just use localName to recognize the interesting elements
 // 2. We can ignore region/animation/audio/language/metadata and only handle color (applied directly or through a style; and only text color, not background color)
-// 3. We can ignore any style information applied on "body", "div", "region" elements and assume that all styles & colors are applied on "p" or "span" elements
-// 4. We can ignore "xml:space" attributes and treat content as "xml:space=default"
-// 5. We can assume that timing information is supplied in "begin" and "end" attributes on "p" elements (not "dur" attributes and not on other elements)
-// 6. We can assume that the time code is HMS (but if it's SMPTE we'll convert by ignoring the frame)
-// 7. We can assume that the timing information is ordered in a way that aligns with WebVTT rules
-// 8. We can rely on the input document being valid or, if invalid, we don't care to be informed
+// 3. We can assume that colors are provided as named colors (that would be valid as CSS class names)
+// 4. We can ignore any style information applied on "body", "div", "region" elements and assume that all styles & colors are applied on "p" or "span" elements
+// 5. We can ignore "xml:space" attributes and treat content as "xml:space=default"
+// 6. We can assume that timing information is supplied in "begin" and "end" attributes on "p" elements (not "dur" attributes and not on other elements)
+// 7. We can assume that the time code is HMS (but if it's SMPTE we'll convert by ignoring the frame)
+// 8. We can assume that the timing information is ordered in a way that aligns with WebVTT rules
+// 9. We can rely on the input document being valid or, if invalid, we don't care to be informed
 //
 // For the output:
 // 1. We number each cue instead of using the xml:id from the input document
