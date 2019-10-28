@@ -19,6 +19,8 @@
 // Ex: "<c.blue>blue</c> white" not "<c.blue>blue </c>white"
 // 4. We remove any significant trailing whitespace from a cue
 // 5. We do not omit a cue class if it covers the entire cue and is for color "white"
+//
+// Keywords: TTML parser, TTML to VTT, TTML to WebVTT, TTML subtitles, subtitle parser, TTML converter
 
 import { LandmarksHandler, BaseHandler } from "../landmarks-handler.js"
 import { LandmarksRange, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksEndTag, LandmarksStartTag, LandmarksEndTagPrefix, TagID, EndTagState } from "../landmarks-parser-types.js";
@@ -264,3 +266,5 @@ export function ttmlToWebVTT(text: string) {
     parser.parse(text, handler);
     return handler.webVTT;
 }
+
+const ttmlToVTT = ttmlToWebVTT; // Search optimisation
