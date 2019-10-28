@@ -128,7 +128,7 @@ function webvttTime(time: string) {
         }
         ms = last("000" + fraction, 3);
     } else {
-        ms = first(match.groups.ms + "000", 3);
+        ms = first((match.groups.ms || "") + "000", 3);
     }
     
     let h = match.groups.h || "00";
