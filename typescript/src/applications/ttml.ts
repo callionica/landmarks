@@ -10,8 +10,9 @@
 // 5. We can ignore "xml:space" attributes and treat content as "xml:space=default"
 // 6. We can assume that timing information is supplied in "begin" and "end" attributes on "p" elements (not "dur" attributes and not on other elements)
 // 7. We can assume that the time code is HMS (but if it's SMPTE we'll convert by assuming 25 frames per second)
-// 8. We can assume that the timing information is ordered in a way that aligns with WebVTT rules
+// 8. We can assume that the timing information is ordered sequentially in a way that aligns with WebVTT rules
 // 9. We can rely on the input document being valid or, if invalid, we don't care to be informed
+// 10. We assume "style" elements are self-contained and do not reference other "style" elements
 //
 // For the output:
 // 1. We number each cue instead of using the xml:id from the input document
@@ -19,7 +20,7 @@
 // 3. We move tags so that significant whitespace does not appear directly before a closing tag
 // Ex: "<c.blue>blue</c> white" not "<c.blue>blue </c>white"
 // 4. We remove any significant trailing whitespace from a cue
-// 5. We do not omit a cue class if it covers the entire cue and is for color "white"
+// 5. We omit a cue class if it covers the entire cue and is for color "white"
 //
 // Keywords: TTML parser, TTML to VTT, TTML to WebVTT, TTML subtitles, subtitle parser, TTML converter
 //
