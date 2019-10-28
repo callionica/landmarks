@@ -1,7 +1,24 @@
 // A simple TTML subtitle parser that converts TTML to WEBVTT
-// We make some simplifying assumptions about which elements can appear
-// by ignoring XML namespaces and just using the localName of interesting
-// elements, by only handling color and not region/animation/metadata, by limiting the time format.
+//
+// ttmlToWebVTT(string) : string converts a TTML string to a WebVTT string
+//
+// We make some simplifying assumptions about the input TTML:
+// 1. We can ignore XML namespaces and just use localName to recognize the interesting elements
+// 2. We can ignore region/animation/audio/language/metadata and only handle color (applied directly or through a style; and only text color, not background color)
+// 3. We can ignore any style information applied on "body", "div", "region" elements and assume that all styles & colors are applied on "p" or "span" elements
+// 4. We can ignore "xml:space" attributes and treat content as "xml:space=default"
+// 5. We can assume that timing information is supplied in "begin" and "end" attributes on "p" elements (not "dur" attributes and not on other elements)
+// 6. We can assume that the time code is HMS (but if it's SMPTE we'll convert by ignoring the frame)
+// 7. We can assume that the timing information is ordered in a way that aligns with WebVTT rules
+// 8. We can rely on the input document being valid or, if invalid, we don't care to be informed
+//
+// For the output:
+// 1. We number each cue instead of using the xml:id from the input document
+// 2. We resolve styles to colors and then use class names named after the color <c.color></c>
+// 3. We move tags so that significant whitespace does not appear directly before a closing tag
+// Ex: "<c.blue>blue</c> white" not "<c.blue>blue </c>white"
+// 4. We remove any significant trailing whitespace from a cue
+// 5. We do not omit a cue class if it covers the entire cue and is for color "white"
 
 import { LandmarksHandler, BaseHandler } from "../landmarks-handler.js"
 import { LandmarksRange, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksEndTag, LandmarksStartTag, LandmarksEndTagPrefix, TagID, EndTagState } from "../landmarks-parser-types.js";
@@ -24,10 +41,16 @@ class LandmarksString {
         this.append(text);
     }
 
+    // The result includes significant whitespace, but not an ignorable trailing space
     get value() {
         if (this.trailingWhitespace != " ") {
             return this.text + this.trailingWhitespace;
         }
+        return this.text;
+    }
+
+    // The result does not include any trailing whitespace
+    get trimmed() {
         return this.text;
     }
 
@@ -229,7 +252,7 @@ class TTML extends BaseHandler {
                 styleStart = `<c.${subtitle.color}>`;
                 styleEnd = `</c>`;
             }
-            return `${n + 1}\n${webvttTime(subtitle.begin)} --> ${webvttTime(subtitle.end)}\n${styleStart}${subtitle.content.value}${styleEnd}\n\n`;
+            return `${n + 1}\n${webvttTime(subtitle.begin)} --> ${webvttTime(subtitle.end)}\n${styleStart}${subtitle.content.trimmed}${styleEnd}\n\n`;
         });
         this.webVTT = "WEBVTT\n\n" + vtt.join("");
     }
