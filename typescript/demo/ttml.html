@@ -8,7 +8,25 @@
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <script type="module">
 		import { ttmlToWebVTT } from "../../js/applications/ttml.js";
-		globalThis.ttmlToWebVTT = ttmlToWebVTT;
+		globalThis.ttmlToWebVTT = function (){
+
+			const ttml = document.getElementById("ttml").value;
+
+			// Convert to WebVTT
+			const vtt = ttmlToWebVTT(ttml);
+
+			// Create a BLOB so that we can create a URL
+			var vttBlob = new Blob([vtt], { type: "text/vtt" });
+
+			// Create a URL from the BLOB
+			var vttURL = URL.createObjectURL(vttBlob);
+
+			// Update the display
+			document.getElementById("webvtt").innerText = vtt;
+
+			// Allow download
+			document.getElementById("download").href = vttURL;
+		};
 	</script>
 	<style>
 		body {
@@ -29,12 +47,15 @@
 <p>Enter TTML here:</p>
 <textarea id="ttml" title="TTML" style="width:100%; height: 120px;">
 <body>
-<p begin="00:00:00.000" end="00:00:00.345">A single caption</p>	
+<p begin="00:00:00.000" end="00:00:00.345">A single caption</p>
+<p begin="00:00:01.050" end="00:00:02.060">Another caption<br/>On 2 lines</p>	
 </body>
+				
 </textarea>
 <p>
-<button onclick='document.getElementById("webvtt").innerText = globalThis.ttmlToWebVTT(document.getElementById("ttml").value)'>Convert to WebVTT</button>
+<button onclick='globalThis.ttmlToWebVTT()'>Convert to WebVTT</button>
 </p>
+<p><a id="download" download href="">Download WebVTT</a></p>
 <div id="webvtt"></div>
 </body>
 
