@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Landmarks Parser - Convert TTML to WebVTT</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <script type="module">
+		import { ttmlToWebVTT } from "../../js/applications/ttml.js";
+		globalThis.ttmlToWebVTT = ttmlToWebVTT;
+    </script>
+</head>
+
+<body>
+	<h1>LANDMARKS</h1><h2>Convert TTML to WebVTT</h2>
+<p>Enter TTML here:</p>
+<textarea id="ttml" title="TTML" style="width:100%; height: 120px;"></textarea>
+<p>
+<button onclick='document.getElementById("webvtt").innerText = globalThis.ttmlToWebVTT(document.getElementById("ttml").value)'>Convert to WebVTT</button>
+</p>
+<div id="webvtt"></div>
+</body>
+
+</html>
