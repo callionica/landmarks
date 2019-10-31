@@ -102,9 +102,10 @@ class LandmarksString {
     }
 }
 
-type E = { localName: string, content: LandmarksString };
+type E = { localName: string, content?: LandmarksString };
 type A = { id?: string, style?: string, color?: string, begin?: string, end?: string };
 type Element = E & A;
+type Subtitle = Element & { content: LandmarksString };
 
 function webvttTime(time: string, framesPerSecond: number = 25) {
     const hms = /^((?<h>\d{1,2}):)?(?<m>\d{1,2}):(?<s>\d{1,2})([.](?<ms>\d{1,3}))?$/ig;
@@ -138,7 +139,7 @@ class TTML extends BaseHandler {
     webVTT: string = "";
 
     private styles: Element[] = [];
-    private subtitles: Element[] = [];
+    private subtitles: Subtitle[] = [];
 
     private elements: Element[] = [];
 
@@ -164,7 +165,7 @@ class TTML extends BaseHandler {
 
     Text(document: string, range: LandmarksRange) {
         const subtitle = this.current("p");
-        if (subtitle) {
+        if (subtitle && subtitle.content) {
             const text = range.getText(document);
             subtitle.content.append(text);
         }
@@ -172,7 +173,7 @@ class TTML extends BaseHandler {
 
     StartTagPrefix(document: string, tag: LandmarksStartTagPrefix) {
         const qn = tag.getQualifiedName(document);
-        let element: Element = { localName: qn.localName, content: new LandmarksString("") };
+        let element: Element = { localName: qn.localName };
         this.elements.push(element);
 
         switch (element.localName) {
@@ -181,12 +182,13 @@ class TTML extends BaseHandler {
                 break;
             case "p":
                 if (this.current("body")) {
-                    this.subtitles.push(element);
+                    element.content = new LandmarksString("");
+                    this.subtitles.push(element as Subtitle);
                 }
                 break;
             case "br":
                 const subtitle = this.current("p");
-                if (subtitle) {
+                if (subtitle && subtitle.content) {
                     subtitle.content.appendBreak();
                 }
                 break;
@@ -220,7 +222,7 @@ class TTML extends BaseHandler {
 
         if (e.localName === "span" && e.color) {
             const subtitle = this.current("p");
-            if (subtitle) {
+            if (subtitle && subtitle.content) {
                 subtitle.content.append(`<c.${e.color}>`);
             }
         }
@@ -241,7 +243,7 @@ class TTML extends BaseHandler {
 
         if (e.localName === "span" && e.color) {
             const subtitle = this.current("p");
-            if (subtitle) {
+            if (subtitle && subtitle.content) {
                 subtitle.content.appendCloseTag("c");
             }
         }
