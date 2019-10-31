@@ -102,11 +102,9 @@ class LandmarksString {
     }
 }
 
-type Style = { name: "style", id: string, color: string };
-type Subtitle = { name: "p", begin: string, end: string, style: string, color: string, content: LandmarksString };
-type Span = { name: "span", style: string, color: string };
-type Other = { name: "other", localName: string };
-type Element = Style | Subtitle | Span | Other;
+type E = { localName: string, content: LandmarksString };
+type A = { id? : string, style?: string, color?: string, begin?: string, end?: string };
+type Element = E & A;
 
 function webvttTime(time: string, framesPerSecond: number = 25) {
     const hms = /^((?<h>\d{1,2}):)?(?<m>\d{1,2}):(?<s>\d{1,2})([.](?<ms>\d{1,3}))?$/ig;
@@ -139,99 +137,86 @@ function webvttTime(time: string, framesPerSecond: number = 25) {
 class TTML extends BaseHandler {
     webVTT: string = "";
 
-    private seenBody: boolean = false;
-
-    private styles: Style[] = [];
-    private subtitles: Subtitle[] = [];
-
-    private currentSubtitle: Subtitle | undefined;
+    private styles: Element[] = [];
+    private subtitles: Element[] = [];
 
     private elements: Element[] = [];
 
-    get currentElement(): Element {
-        return this.elements[this.elements.length - 1];
+    current(localName: string | undefined = undefined): Element | undefined {
+        if (!localName) {
+            return this.elements[this.elements.length - 1];
+        }
+
+        for (let index = this.elements.length - 1; index >= 0; --index) {
+            const e = this.elements[index];
+            if (e.localName === localName) {
+                return e;
+            }
+        }
+    
+        return undefined;
     }
 
     Text(document: string, range: LandmarksRange) {
-        if (this.currentSubtitle) {
+        const subtitle = this.current("p");
+        if (subtitle) {
             const text = range.getText(document);
-            this.currentSubtitle.content.append(text);
+            subtitle.content.append(text);
         }
     }
 
     StartTagPrefix(document: string, tag: LandmarksStartTagPrefix) {
         const qn = tag.getQualifiedName(document);
-        let element: Element = { name: "other", localName: qn.localName };
+        let element: Element = { localName: qn.localName, content: new LandmarksString("") };
+        this.elements.push(element);
 
-        switch (qn.localName) {
+        switch (element.localName) {
             case "style":
-                element = { name: "style", id: "", color: "" };
                 this.styles.push(element);
                 break;
             case "p":
-                if (this.seenBody) {
-                    element = { name: "p", begin: "", end: "", style: "", color: "", content: new LandmarksString("") };
+                if (this.current("body")) {
                     this.subtitles.push(element);
-                    this.currentSubtitle = element;
                 }
-                break;
-            case "span":
-                element = { name: "span", style: "", color: "" };
                 break;
             case "br":
-                if (this.currentSubtitle) {
-                    this.currentSubtitle.content.appendBreak();
+                const subtitle = this.current("p");
+                if (subtitle) {
+                    subtitle.content.appendBreak();
                 }
                 break;
-            case "body":
-                this.seenBody = true;
-                break;
         }
-        this.elements.push(element);
     }
 
     StartTagAttribute(document: string, attribute: LandmarksAttribute) {
+        const e = this.current()!;
+
         const qn = attribute.getQualifiedName(document);
-        const e = this.currentElement;
-        if (e.name === "style") {
-            switch (qn.localName) {
-                case "id":
-                case "color":
-                    e[qn.localName] = attribute.value.getText(document);
-                    break;
-            }
-        } else if (e.name === "p") {
-            switch (qn.localName) {
-                case "begin":
-                case "end":
-                case "color":
-                case "style":
-                    e[qn.localName] = attribute.value.getText(document);
-                    break;
-            }
-        } else if (e.name === "span") {
-            switch (qn.localName) {
-                case "color":
-                case "style":
-                    e[qn.localName] = attribute.value.getText(document);
-                    break;
-            }
+        switch (qn.localName) {
+            case "id":
+            case "style":
+            case "color":
+            case "begin":
+            case "end":
+                e[qn.localName] = attribute.value.getText(document);
+                break;
         }
     }
 
     StartTag(document: string, tag: LandmarksStartTag) {
-        const e = this.currentElement;
+        const e = this.current()!;
 
-        if (e.name === "span" || e.name === "p") {
+        if (e.localName === "span" || e.localName === "p") {
             const style = this.styles.find(style => style.id === e.style);
             if (style && style.color) {
                 e.color = style.color;
             }
         }
 
-        if (e.name === "span") {
-            if (e.color && this.currentSubtitle) {
-                this.currentSubtitle.content.append(`<c.${e.color}>`);
+        if (e.localName === "span" && e.color) {
+            const subtitle = this.current("p");
+            if (subtitle) {
+                subtitle.content.append(`<c.${e.color}>`);
             }
         }
 
@@ -246,15 +231,14 @@ class TTML extends BaseHandler {
             return;
         }
 
-        const e = this.currentElement;
-        if (e.name === "span") {
-            if (e.color && this.currentSubtitle) {
-                this.currentSubtitle.content.appendCloseTag("c");
-            }
-        }
+        // A matching end tag means we have a current element
+        const e = this.current()!;
 
-        if (this.currentSubtitle === this.currentElement) {
-            this.currentSubtitle = undefined;
+        if (e.localName === "span" && e.color) {
+            const subtitle = this.current("p");
+            if (subtitle) {
+                subtitle.content.appendCloseTag("c");
+            }
         }
 
         this.elements.pop();
@@ -268,7 +252,7 @@ class TTML extends BaseHandler {
                 styleStart = `<c.${subtitle.color}>`;
                 styleEnd = `</c>`;
             }
-            return `${n + 1}\n${webvttTime(subtitle.begin)} --> ${webvttTime(subtitle.end)}\n${styleStart}${subtitle.content.trimmed}${styleEnd}\n\n`;
+            return `${n + 1}\n${webvttTime(subtitle.begin!)} --> ${webvttTime(subtitle.end!)}\n${styleStart}${subtitle.content.trimmed}${styleEnd}\n\n`;
         });
         this.webVTT = "WEBVTT\n\n" + vtt.join("");
     }
