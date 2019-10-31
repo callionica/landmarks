@@ -142,6 +142,11 @@ class TTML extends BaseHandler {
 
     private elements: Element[] = [];
 
+    get path() : string {
+        const separator = " > ";
+        return separator + this.elements.map(e => e.localName).join(separator);
+    }
+
     current(localName: string | undefined = undefined): Element | undefined {
         if (!localName) {
             return this.elements[this.elements.length - 1];
@@ -206,7 +211,7 @@ class TTML extends BaseHandler {
     StartTag(document: string, tag: LandmarksStartTag) {
         const e = this.current()!;
 
-        if (e.localName === "span" || e.localName === "p") {
+        if ((e.localName === "span" || e.localName === "p") && e.style) {
             const style = this.styles.find(style => style.id === e.style);
             if (style && style.color) {
                 e.color = style.color;
@@ -248,8 +253,9 @@ class TTML extends BaseHandler {
         const vtt = this.subtitles.map((subtitle, n) => {
             let styleStart = "";
             let styleEnd = "";
-            if (subtitle.color && subtitle.color !== "white") {
-                styleStart = `<c.${subtitle.color}>`;
+            const color = subtitle.color;
+            if (color && (color !== "white")) {
+                styleStart = `<c.${color}>`;
                 styleEnd = `</c>`;
             }
             return `${n + 1}\n${webvttTime(subtitle.begin!)} --> ${webvttTime(subtitle.end!)}\n${styleStart}${subtitle.content.trimmed}${styleEnd}\n\n`;
