@@ -103,7 +103,7 @@ class LandmarksString {
 }
 
 type E = { localName: string, content: LandmarksString };
-type A = { id? : string, style?: string, color?: string, begin?: string, end?: string };
+type A = { id?: string, style?: string, color?: string, begin?: string, end?: string };
 type Element = E & A;
 
 function webvttTime(time: string, framesPerSecond: number = 25) {
@@ -118,7 +118,7 @@ function webvttTime(time: string, framesPerSecond: number = 25) {
             return time;
         }
         const frame = parseInt(match.groups.f, 10);
-        let fraction = 1000 * frame/framesPerSecond;
+        let fraction = 1000 * frame / framesPerSecond;
         if (fraction >= 1000) {
             // Maybe frames per second is wrong
             fraction = 999;
@@ -127,7 +127,7 @@ function webvttTime(time: string, framesPerSecond: number = 25) {
     } else {
         ms = first((match.groups.ms || "000") + "000", 3);
     }
-    
+
     let h = match.groups.h || "00";
     let m = match.groups.m || "00";
     let s = match.groups.s || "00";
@@ -153,7 +153,7 @@ class TTML extends BaseHandler {
                 return e;
             }
         }
-    
+
         return undefined;
     }
 
