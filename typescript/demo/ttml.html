@@ -2,35 +2,59 @@
 <html>
 
 <head>
-    <meta charset='utf-8'>
-    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title>Landmarks Parser - Convert TTML to WebVTT</title>
-    <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <script type="module">
+	<meta charset='utf-8'>
+	<meta http-equiv='X-UA-Compatible' content='IE=edge'>
+	<title>Landmarks Parser - Convert TTML to WebVTT</title>
+	<meta name='viewport' content='width=device-width, initial-scale=1'>
+	<script type="module">
 		import { ttmlToWebVTT } from "../../js/applications/ttml.js";
-		globalThis.ttmlToWebVTT = function (){
 
-			const ttml = document.getElementById("ttml").value;
+		function ready(doc, callback) {
+			// in case the document is already rendered
+			if (doc.readyState != 'loading') {
+				callback();
+			}
+			// modern browsers
+			else if (doc.addEventListener) {
+				doc.addEventListener('DOMContentLoaded', callback);
+			}
+			// IE <= 8
+			else {
+				doc.attachEvent('onreadystatechange', function () {
+					if (doc.readyState == 'complete') {
+						callback();
+					}
+				});
+			}
+		}
 
-			// Convert to WebVTT
-			const vtt = ttmlToWebVTT(ttml);
+		function init() {
+			function convertToWebVTT() {
 
-			// Create a BLOB so that we can create a URL
-			var vttBlob = new Blob([vtt], { type: "text/vtt" });
+				const ttml = document.getElementById("ttml").value;
 
-			// Create a URL from the BLOB
-			var vttURL = URL.createObjectURL(vttBlob);
+				// Convert to WebVTT
+				const vtt = ttmlToWebVTT(ttml);
 
-			// Update the display
-			document.getElementById("webvtt").innerText = vtt;
+				// Create a BLOB so that we can create a URL
+				var vttBlob = new Blob([vtt], { type: "text/vtt" });
 
-			// Allow download
-			document.getElementById("download").href = vttURL;
-		};
+				// Create a URL from the BLOB
+				var vttURL = URL.createObjectURL(vttBlob);
 
-		globalThis.ttmlToWebVTT();
+				// Update the display
+				document.getElementById("webvtt").innerText = vtt;
 
-		document.getElementById("ttml").oninput = globalThis.ttmlToWebVTT;
+				// Allow download
+				document.getElementById("download").href = vttURL;
+			}
+
+			convertToWebVTT();
+
+			document.getElementById("ttml").oninput = convertToWebVTT;
+		}
+
+		ready(document, init);
 	</script>
 	<style>
 		body {
@@ -38,10 +62,12 @@
 			margin-right: 2vw;
 			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 		}
+
 		textarea {
 			font-family: 'Courier New', Courier, monospace;
 			font-size: inherit;
 		}
+
 		#webvtt {
 			font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 		}
@@ -49,20 +75,19 @@
 </head>
 
 <body>
-	<h1>LANDMARKS</h1><h2>Convert TTML to WebVTT</h2>
-<p>Enter TTML here:</p>
+	<h1>LANDMARKS</h1>
+	<h2>Convert TTML to WebVTT</h2>
+	<p>Enter TTML here:</p>
+
 <textarea id="ttml" title="TTML" style="width:100%; height: 120px;">
 <body>
 <p begin="00:00:00.000" end="00:00:00.345">A single caption</p>
 <p begin="00:00:01.050" end="00:00:02.060">Another caption<br/>On 2 lines</p>	
-</body>
-				
+</body>				
 </textarea>
-<!--<p>
-<button onclick='globalThis.ttmlToWebVTT()'>Convert to WebVTT</button>
-</p>-->
-<p><a id="download" download="subtitles.vtt" href="">Download WebVTT</a></p>
-<div id="webvtt"></div>
+
+	<p><a id="download" download="subtitles.vtt" href="">Download subtitles.vtt</a></p>
+	<div id="webvtt"></div>
 </body>
 
 </html>
