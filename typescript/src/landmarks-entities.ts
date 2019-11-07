@@ -123,6 +123,7 @@ class UTF8String {
     }
 
     substring(begin: number, end?: number | undefined): UTF8String {
+        end = end || this.length;
         const view = this.buffer.subarray(begin, end);
         return new UTF8String(view.length).appendBytes(view);
     }
@@ -416,4 +417,10 @@ class EntityDecoder {
         const data = text.value;
         return this.appendBytes(data);
     }
+}
+
+export function decodeEntities(text: string) : string {
+    const decoder = new EntityDecoder(text.length);
+    decoder.appendString(text);
+    return decoder.text.toString();
 }
