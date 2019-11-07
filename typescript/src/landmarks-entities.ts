@@ -123,7 +123,11 @@ class UTF8String {
     }
 
     substring(begin: number, end?: number | undefined): UTF8String {
-        end = end || this.length;
+        if (end === undefined) {
+            end = this.length;
+        } else if (end < 0) {
+            end = this.length + end;
+        }
         const view = this.buffer.subarray(begin, end);
         return new UTF8String(view.length).appendBytes(view);
     }
