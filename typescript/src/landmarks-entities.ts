@@ -1,5 +1,7 @@
 // A decoder for HTML5 character entities and named entities
 
+import { getEntity } from "./entities.js";
+
 type UTF8Array = Uint8Array;
 type UTF8Byte = number;
 type UTF8Bytes = UTF8Array | [UTF8Byte]
@@ -200,7 +202,7 @@ class EntityEncoder {
 type size_t = number;
 type char32_t = number;
 
-const entityMaximumLength = 128; // TODO
+const entityMaximumLength = 48; // TODO
 
 /*
  // FROM: http://www.unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WindowsBestFit/bestfit1252.txt
@@ -277,6 +279,7 @@ const compatabilityCP1252 = [
 // then backtrack once we've seen a possible entity
 // If it turns out not to be an entity, the string is unchanged
 // Otherwise we replace the entity with the decoded data
+// Note that we don't handle named entities without the final semicolon
 class EntityDecoder {
     text: UTF8String;
 
@@ -291,7 +294,14 @@ class EntityDecoder {
 
     namedEntity(initial: number) {
         const text = this.text;
-        // TODO
+
+        const entity = text.substring(initial - 1).toString(); // Include &
+        const data = getEntity(entity);
+        
+        if (data) {
+            text.resize(initial - 1);
+            text.appendString(data.characters);
+        }
     }
 
     numericEntity(initial: number) {
