@@ -1,3 +1,5 @@
+import { decodeEntities } from "./landmarks-entities.js";
+
 // ALL RIGHTS RESERVED
 
 export type LandmarksPosition = number;
@@ -67,6 +69,10 @@ export class LandmarksRange {
         }
         
         return document.substring(this.start, this.end);
+    }
+
+    getDecodedText(document: string) : string {
+        return decodeEntities(this.getText(document));
     }
 
     static invalid = new LandmarksRange(npos, npos);

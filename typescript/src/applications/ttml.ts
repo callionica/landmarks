@@ -31,8 +31,6 @@ import { LandmarksRange, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksE
 import { LandmarksParser } from "../landmarks-parser.js";
 import { xml } from "../landmarks-policy-ml.js";
 
-import { decodeEntities } from "../landmarks-entities.js"
-
 function first(text: string, count: number = 1) {
     return text.substring(0, count);
 }
@@ -168,7 +166,7 @@ class TTML extends BaseHandler {
     Text(document: string, range: LandmarksRange) {
         const subtitle = this.current("p");
         if (subtitle && subtitle.content) {
-            const text = range.getText(document);
+            const text = range.getDecodedText(document);
             subtitle.content.append(text);
         }
     }
@@ -262,7 +260,7 @@ class TTML extends BaseHandler {
                 styleStart = `<c.${color}>`;
                 styleEnd = `</c>`;
             }
-            return `${n + 1}\n${webvttTime(subtitle.begin!)} --> ${webvttTime(subtitle.end!)}\n${styleStart}${decodeEntities(subtitle.content.trimmed)}${styleEnd}\n\n`;
+            return `${n + 1}\n${webvttTime(subtitle.begin!)} --> ${webvttTime(subtitle.end!)}\n${styleStart}${subtitle.content.trimmed}${styleEnd}\n\n`;
         });
         this.webVTT = "WEBVTT\n\n" + vtt.join("");
     }
