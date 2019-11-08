@@ -1,10 +1,7 @@
 // A decoder for HTML5 character entities and named entities
 
 import { getEntity } from "./entities.js";
-
-type UTF8Array = Uint8Array;
-type UTF8Byte = number;
-type UTF8Bytes = UTF8Array | [UTF8Byte]
+import { UTF8String, UTF8Byte, UTF8Bytes } from "./landmarks-utf8.js"
 
 const byte_0: UTF8Byte = "0".charCodeAt(0);
 const byte_9: UTF8Byte = "9".charCodeAt(0);
@@ -35,116 +32,6 @@ function byteToDecimalDigit(ch: UTF8Byte): number {
     }
 
     return -1;
-}
-
-// We store extra data after the string
-// Currently the extra data consists of:
-// 1. A zero-terminator
-const extra: number = 1;
-
-class UTF8String {
-    length: number;
-    buffer: UTF8Array;
-
-    get capacity() {
-        return this.buffer.length - extra;
-    }
-
-    constructor(capacity: number = 0) {
-        this.length = 0;
-        this.buffer = new Uint8Array(capacity ? capacity + extra : 16);
-    }
-
-    at(index: number) {
-        return this.buffer[index];
-    }
-
-    // Ensures that there is at least capacity bytes available.
-    // If a new allocation is required, will reserve twice the old capacity or the new capacity, whichever is larger.
-    ensureCapacity(capacity: number) {
-        if (capacity > this.capacity) {
-            const old = this.buffer;
-            const realCapacity = capacity + extra;
-            const x2 = old.length * 2;
-            const buffer = new Uint8Array(Math.max(realCapacity, x2));
-            buffer.set(old);
-            this.buffer = buffer;
-        }
-    }
-
-    appendBytes(data: UTF8Bytes) {
-        this.ensureCapacity(this.length + data.length);
-        this.buffer.set(data, this.length);
-        this.length += data.length;
-        this.buffer[this.length] = 0;
-        return this;
-    }
-
-    appendString(text: string) {
-        const data = new TextEncoder().encode(text);
-        return this.appendBytes(data);
-    }
-
-    append(text: UTF8String) {
-        const data = text.value;
-        return this.appendBytes(data);
-    }
-
-    // Ensures that there is at least capacity bytes available.
-    // If a new allocation is required, will reserve capacity bytes.
-    reserve(capacity: number) {
-        if (capacity > this.capacity) {
-            const realCapacity = capacity + extra;
-            const old = this.buffer;
-            const buffer = new Uint8Array(realCapacity);
-            buffer.set(old);
-            this.buffer = buffer;
-        }
-        return this;
-    }
-
-    resize(length: number) {
-        if (length < this.length) {
-            this.buffer[length] = 0;
-        } else if (this.length < length) {
-            this.reserve(length);
-            this.buffer.fill(0, this.length);
-        }
-        this.length = length;
-        return this;
-    }
-
-    // If there is more space in the storage than is needed to store the text data, copies the data to new storage of exactly the right size
-    shrinkToFit() {
-        if (this.capacity > this.length) {
-            this.buffer = this.buffer.slice(0, this.length + extra);
-        }
-        return this;
-    }
-
-    substring(begin: number, end?: number | undefined): UTF8String {
-        if (end === undefined) {
-            end = this.length;
-        } else if (end < 0) {
-            end = this.length + end;
-        }
-        const view = this.buffer.subarray(begin, end);
-        return new UTF8String(view.length).appendBytes(view);
-    }
-
-    // Returns a view of the data
-    get value(): UTF8Array {
-        return this.buffer.subarray(0, this.length);
-    }
-
-    // Returns a view of the data with the zero-terminator
-    get c_str(): UTF8Array {
-        return this.buffer.subarray(0, this.length + 1); // zero-terminated
-    }
-
-    toString() {
-        return new TextDecoder().decode(this.value);
-    }
 }
 
 const lt = new UTF8String().appendString("&lt;");
