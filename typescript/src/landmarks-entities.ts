@@ -34,9 +34,9 @@ function byteToDecimalDigit(ch: UTF8Byte): number {
     return -1;
 }
 
-const lt = new UTF8String().appendString("&lt;");
-const gt = new UTF8String().appendString("&gt;");
-const amp = new UTF8String().appendString("&amp;");
+const lt = new UTF8String("&lt;");
+const gt = new UTF8String("&gt;");
+const amp = new UTF8String("&amp;");
 
 const byte_lt: UTF8Byte = "<".charCodeAt(0);
 const byte_gt: UTF8Byte = ">".charCodeAt(0);
