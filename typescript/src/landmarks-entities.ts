@@ -10,7 +10,7 @@ const byte_F: UTF8Byte = "F".charCodeAt(0);
 const byte_a: UTF8Byte = "a".charCodeAt(0);
 const byte_f: UTF8Byte = "f".charCodeAt(0);
 
-function byteToHexDigit(ch: UTF8Byte): number {
+function HexDigitToNumber(ch: UTF8Byte): number {
     if (byte_0 <= ch && ch <= byte_9) {
         return ch - byte_0;
     }
@@ -26,7 +26,7 @@ function byteToHexDigit(ch: UTF8Byte): number {
     return -1;
 }
 
-function byteToDecimalDigit(ch: UTF8Byte): number {
+function DecimalDigitToNumber(ch: UTF8Byte): number {
     if (byte_0 <= ch && ch <= byte_9) {
         return ch - byte_0;
     }
@@ -210,7 +210,7 @@ class EntityDecoder {
             if (entity_e - entity_b <= 8) { // max of 8 hex digits
                 success = true;
                 for (let i = entity_b; i != entity_e; ++i) {
-                    const digit = byteToHexDigit(text.at(i));
+                    const digit = HexDigitToNumber(text.at(i));
                     if (digit < 0) {
                         success = false;
                         break;
@@ -224,7 +224,7 @@ class EntityDecoder {
             if (entity_e - entity_b <= 10) { // max of 10 decimal digits
                 success = true;
                 for (let i = entity_b; i != entity_e; ++i) {
-                    const digit = byteToDecimalDigit(text.at(i));
+                    const digit = DecimalDigitToNumber(text.at(i));
                     if (digit < 0) {
                         success = false;
                         break;
