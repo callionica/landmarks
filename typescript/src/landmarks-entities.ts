@@ -1,14 +1,34 @@
 // A decoder for HTML5 character entities and named entities
 
 import { getEntity } from "./entities.js";
-import { UTF8String, UTF8Byte, UTF8Bytes, UTF8Array } from "./landmarks-utf8.js"
+import { UTF8String, UTF8Byte, UTF8Bytes, UTF8Array, u8 } from "./landmarks-utf8.js"
 
-const byte_0: UTF8Byte = "0".charCodeAt(0);
-const byte_9: UTF8Byte = "9".charCodeAt(0);
-const byte_A: UTF8Byte = "A".charCodeAt(0);
-const byte_F: UTF8Byte = "F".charCodeAt(0);
-const byte_a: UTF8Byte = "a".charCodeAt(0);
-const byte_f: UTF8Byte = "f".charCodeAt(0);
+const byte_0: UTF8Byte = u8("0")[0];
+const byte_9: UTF8Byte = u8("9")[0];
+const byte_A: UTF8Byte = u8("A")[0];
+const byte_F: UTF8Byte = u8("F")[0];
+const byte_Z: UTF8Byte = u8("Z")[0];
+const byte_a: UTF8Byte = u8("a")[0];
+const byte_f: UTF8Byte = u8("f")[0];
+const byte_z: UTF8Byte = u8("z")[0];
+
+const spaces = u8(" \t\n\f\r");
+
+function isAlphaNumeric(ch: UTF8Byte): boolean {
+    if (byte_a <= ch && ch <= byte_z) {
+        return true;
+    }
+
+    if (byte_A <= ch && ch <= byte_Z) {
+        return true;
+    }
+
+    if (byte_0 <= ch && ch <= byte_9) {
+        return true;
+    }
+
+    return false;
+}
 
 function HexDigitToNumber(ch: UTF8Byte): number {
     if (byte_0 <= ch && ch <= byte_9) {
@@ -326,6 +346,8 @@ enum EPState {
 };
 
 export function* parseEntities(data: UTF8Array, position: size_t = 0) {
+    const checkNamesWithoutSemicolon = true;
+    const last = data.length - 1;
     let pos = position;
 
     let state: EPState = EPState.start;
@@ -447,16 +469,26 @@ export function* parseEntities(data: UTF8Array, position: size_t = 0) {
                 break;
             }
             case EPState.named: {
-                if (character === byte_semi) {
+                if (checkNamesWithoutSemicolon || character === byte_semi) {
                     const name = new UTF8String(data.subarray(first, pos + 1));
                     const entity = getEntity(name.toString()); // TODO avoid conversions
                     if (entity !== undefined) {
+                        const next = data[pos + 1];
+                        if (next === byte_semi) {
+                            ++pos;
+                        }
                         yield new UTF8String(entity.characters);
                         first = pos + 1;
+                        state = EPState.start;
+                        break;
                     }
+                }
+
+                if (!isAlphaNumeric(character)) {
                     state = EPState.start;
                     break;
                 }
+
                 if (pos - first > entityMaximumLength) {
                     state = EPState.start;
                     break;

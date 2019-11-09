@@ -2,6 +2,10 @@ export type UTF8Array = Uint8Array;
 export type UTF8Byte = number;
 export type UTF8Bytes = UTF8Array | [UTF8Byte]
 
+export function u8(text: string) : UTF8Array {
+    return new TextEncoder().encode(text);
+}
+
 export class UTF8String {
     private _length: number;
     private _buffer: UTF8Array;
