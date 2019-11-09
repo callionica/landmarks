@@ -1,7 +1,7 @@
 // A decoder for HTML5 character entities and named entities
 
 import { getEntity } from "./entities.js";
-import { UTF8String, UTF8Byte, UTF8Bytes } from "./landmarks-utf8.js"
+import { UTF8String, UTF8Byte, UTF8Bytes, UTF8Array } from "./landmarks-utf8.js"
 
 const byte_0: UTF8Byte = "0".charCodeAt(0);
 const byte_9: UTF8Byte = "9".charCodeAt(0);
@@ -189,7 +189,7 @@ class EntityDecoder {
 
         const entity = text.substring(initial - 1).toString(); // Include &
         const data = getEntity(entity);
-        
+
         if (data) {
             text.resize(initial - 1);
             text.appendString(data.characters);
@@ -310,8 +310,177 @@ class EntityDecoder {
     }
 }
 
-export function decodeEntities(text: string) : string {
+export function decodeEntitiesA(text: string): string {
     const decoder = new EntityDecoder(text.length);
     decoder.appendString(text);
     return decoder.text.toString();
+}
+
+enum EPState {
+    start,
+    possible,
+    named,
+    numeric,
+    hex,
+    decimal,
+};
+
+export function* parseEntities(data: UTF8Array, position: size_t = 0) {
+    let pos = position;
+
+    let state: EPState = EPState.start;
+    let first = pos;
+
+    let unicode_character: char32_t = 0;
+    let high_first: size_t = 0;
+    let high_last: size_t = 0;
+    let high_surrogate: char32_t = 0;
+
+    function postnumeric(): char32_t | undefined {
+        // Control characters are mapped to useful characters from CP1252
+        if (0x80 <= unicode_character && unicode_character <= 0x9f) {
+            const index = unicode_character - 0x80;
+            unicode_character = compatabilityCP1252[index];
+        }
+
+        if (0xD800 <= unicode_character && unicode_character <= 0xDBFF) { // High surrogate
+            // A high surrogate will remain encoded unless immediately followed by a low surrogate
+            high_surrogate = unicode_character;
+            high_first = first;
+            high_last = pos;
+        } else if (0xDC00 <= unicode_character && unicode_character <= 0xDFFF) { // Low surrogate
+            // A low surrogate will remain encoded unless immediately preceded by a high surrogate
+            if (high_first && (first == high_last + 1)) {
+                // http://unicode.org/faq/utf_bom.html#utf16-4
+                const SURROGATE_OFFSET: char32_t = 0x10000 - (0xD800 << 10) - 0xDC00;
+                const codepoint: char32_t = (high_surrogate << 10) + unicode_character + SURROGATE_OFFSET;
+                return codepoint;
+            }
+        } else {
+            return unicode_character;
+        }
+
+        return undefined;
+    }
+
+    while (pos < data.length) {
+        const character = data[pos];
+        switch (state) {
+            case EPState.start: {
+                if (character === byte_amp) {
+                    if (pos > first) {
+                        yield new UTF8String(data.subarray(first, pos));
+                    }
+                    first = pos;
+                    state = EPState.possible;
+                }
+                break;
+            }
+            case EPState.possible: {
+                if (character === byte_hash) {
+                    state = EPState.numeric;
+                    unicode_character = 0;
+                } else {
+                    state = EPState.named;
+                }
+                break;
+            }
+            case EPState.numeric: {
+                if (character === byte_x || character == byte_X) {
+                    state = EPState.hex;
+                } else {
+                    state = EPState.decimal;
+                    const digit = DecimalDigitToNumber(character);
+                    if (digit < 0) {
+                        state = EPState.start;
+                    } else {
+                        unicode_character *= 10;
+                        unicode_character += digit;
+                    }
+                }
+                break;
+            }
+            case EPState.hex: {
+                if (character === byte_semi) {
+                    let entity = postnumeric();
+                    if (entity !== undefined) {
+                        yield new UTF8String(String.fromCodePoint(entity));
+                        first = pos + 1;
+                    }
+                    state = EPState.start;
+                    break;
+                }
+                if (pos - first > 8) {
+                    state = EPState.start;
+                    break;
+                }
+                const digit = HexDigitToNumber(character);
+                if (digit < 0) {
+                    state = EPState.start;
+                } else {
+                    unicode_character *= 16;
+                    unicode_character += digit;
+                }
+                break;
+            }
+            case EPState.decimal: {
+                if (character === byte_semi) {
+                    let entity = postnumeric();
+                    if (entity !== undefined) {
+                        yield new UTF8String(String.fromCodePoint(entity));
+                        first = pos + 1;
+                    }
+                    state = EPState.start;
+                    break;
+                }
+                if (pos - first > 10) {
+                    state = EPState.start;
+                    break;
+                }
+                const digit = DecimalDigitToNumber(character);
+                if (digit < 0) {
+                    state = EPState.start;
+                } else {
+                    unicode_character *= 10;
+                    unicode_character += digit;
+                }
+                break;
+            }
+            case EPState.named: {
+                if (character === byte_semi) {
+                    const name = new UTF8String(data.subarray(first, pos + 1));
+                    const entity = getEntity(name.toString()); // TODO avoid conversions
+                    if (entity !== undefined) {
+                        yield new UTF8String(entity.characters);
+                        first = pos + 1;
+                    }
+                    state = EPState.start;
+                    break;
+                }
+                if (pos - first > entityMaximumLength) {
+                    state = EPState.start;
+                    break;
+                }
+
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+        ++pos;
+    }
+
+    if (pos > first) {
+        yield new UTF8String(data.subarray(first, pos));
+    }
+}
+
+export function decodeEntities(text: string): string {
+    const input = new UTF8String(text);
+    const result = new UTF8String(input.length);
+    for (const piece of parseEntities(input.value)) {
+        result.append(piece);
+    }
+    return result.toString();
 }
