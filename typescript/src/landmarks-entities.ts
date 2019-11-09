@@ -187,154 +187,154 @@ const compatabilityCP1252 = [
     0x0178,
 ];
 
-// The basic approach of the entity decoder is to append to the string
-// then backtrack once we've seen a possible entity
-// If it turns out not to be an entity, the string is unchanged
-// Otherwise we replace the entity with the decoded data
-// Note that we don't handle named entities without the final semicolon
-class EntityDecoder {
-    text: UTF8String;
+// // The basic approach of the entity decoder is to append to the string
+// // then backtrack once we've seen a possible entity
+// // If it turns out not to be an entity, the string is unchanged
+// // Otherwise we replace the entity with the decoded data
+// // Note that we don't handle named entities without the final semicolon
+// class EntityDecoder {
+//     text: UTF8String;
 
-    start: size_t = 0;
-    high_start: size_t = 0;
-    high_end: size_t = 0;
-    high_surrogate: char32_t = 0;
+//     start: size_t = 0;
+//     high_start: size_t = 0;
+//     high_end: size_t = 0;
+//     high_surrogate: char32_t = 0;
 
-    constructor(capacity: number) {
-        this.text = new UTF8String(capacity);
-    }
+//     constructor(capacity: number) {
+//         this.text = new UTF8String(capacity);
+//     }
 
-    namedEntity(initial: number) {
-        const text = this.text;
+//     namedEntity(initial: number) {
+//         const text = this.text;
 
-        const entity = text.substring(initial - 1).toString(); // Include &
-        const data = getEntity(entity);
+//         const entity = text.substring(initial - 1).toString(); // Include &
+//         const data = getEntity(entity);
 
-        if (data) {
-            text.resize(initial - 1);
-            text.appendString(data.characters);
-        }
-    }
+//         if (data) {
+//             text.resize(initial - 1);
+//             text.appendString(data.characters);
+//         }
+//     }
 
-    numericEntity(initial: number) {
-        const text = this.text;
-        let entity_b = initial + 1;
-        const entity_e = text.length - 1;
+//     numericEntity(initial: number) {
+//         const text = this.text;
+//         let entity_b = initial + 1;
+//         const entity_e = text.length - 1;
 
-        let unicode_character: char32_t = 0;
-        let success: boolean = false;
-        const first = text.at(entity_b);
-        if (first == byte_x || first == byte_X) {
-            ++entity_b; // Skip X
-            // Hex
-            if (entity_e - entity_b <= 8) { // max of 8 hex digits
-                success = true;
-                for (let i = entity_b; i != entity_e; ++i) {
-                    const digit = HexDigitToNumber(text.at(i));
-                    if (digit < 0) {
-                        success = false;
-                        break;
-                    }
-                    unicode_character *= 16;
-                    unicode_character += digit;
-                }
-            }
-        } else if (entity_b < entity_e) {
-            // Decimal
-            if (entity_e - entity_b <= 10) { // max of 10 decimal digits
-                success = true;
-                for (let i = entity_b; i != entity_e; ++i) {
-                    const digit = DecimalDigitToNumber(text.at(i));
-                    if (digit < 0) {
-                        success = false;
-                        break;
-                    }
-                    unicode_character *= 10;
-                    unicode_character += digit;
-                }
-            }
-        }
+//         let unicode_character: char32_t = 0;
+//         let success: boolean = false;
+//         const first = text.at(entity_b);
+//         if (first == byte_x || first == byte_X) {
+//             ++entity_b; // Skip X
+//             // Hex
+//             if (entity_e - entity_b <= 8) { // max of 8 hex digits
+//                 success = true;
+//                 for (let i = entity_b; i != entity_e; ++i) {
+//                     const digit = HexDigitToNumber(text.at(i));
+//                     if (digit < 0) {
+//                         success = false;
+//                         break;
+//                     }
+//                     unicode_character *= 16;
+//                     unicode_character += digit;
+//                 }
+//             }
+//         } else if (entity_b < entity_e) {
+//             // Decimal
+//             if (entity_e - entity_b <= 10) { // max of 10 decimal digits
+//                 success = true;
+//                 for (let i = entity_b; i != entity_e; ++i) {
+//                     const digit = DecimalDigitToNumber(text.at(i));
+//                     if (digit < 0) {
+//                         success = false;
+//                         break;
+//                     }
+//                     unicode_character *= 10;
+//                     unicode_character += digit;
+//                 }
+//             }
+//         }
 
-        if (success) {
-            // Control characters are mapped to useful characters from CP1252
-            if (0x80 <= unicode_character && unicode_character <= 0x9f) {
-                const index = unicode_character - 0x80;
-                unicode_character = compatabilityCP1252[index];
-            }
+//         if (success) {
+//             // Control characters are mapped to useful characters from CP1252
+//             if (0x80 <= unicode_character && unicode_character <= 0x9f) {
+//                 const index = unicode_character - 0x80;
+//                 unicode_character = compatabilityCP1252[index];
+//             }
 
-            //assert(initial > 0);
+//             //assert(initial > 0);
 
-            if (0xD800 <= unicode_character && unicode_character <= 0xDBFF) { // High surrogate
-                // A high surrogate will remain encoded unless immediately followed by a low surrogate
-                this.high_surrogate = unicode_character;
-                this.high_start = initial;
-                this.high_end = text.length;
-            } else if (0xDC00 <= unicode_character && unicode_character <= 0xDFFF) { // Low surrogate
-                // A low surrogate will remain encoded unless immediately preceded by a high surrogate
-                if (this.high_start && (initial == this.high_end + 1)) {
-                    // http://unicode.org/faq/utf_bom.html#utf16-4
-                    const SURROGATE_OFFSET: char32_t = 0x10000 - (0xD800 << 10) - 0xDC00;
-                    const codepoint: char32_t = (this.high_surrogate << 10) + unicode_character + SURROGATE_OFFSET;
-                    text.resize(this.high_start - 1);
-                    text.appendString(String.fromCodePoint(codepoint));
-                }
-            } else {
-                text.resize(initial - 1);
-                text.appendString(String.fromCodePoint(unicode_character));
-            }
-        }
-    }
+//             if (0xD800 <= unicode_character && unicode_character <= 0xDBFF) { // High surrogate
+//                 // A high surrogate will remain encoded unless immediately followed by a low surrogate
+//                 this.high_surrogate = unicode_character;
+//                 this.high_start = initial;
+//                 this.high_end = text.length;
+//             } else if (0xDC00 <= unicode_character && unicode_character <= 0xDFFF) { // Low surrogate
+//                 // A low surrogate will remain encoded unless immediately preceded by a high surrogate
+//                 if (this.high_start && (initial == this.high_end + 1)) {
+//                     // http://unicode.org/faq/utf_bom.html#utf16-4
+//                     const SURROGATE_OFFSET: char32_t = 0x10000 - (0xD800 << 10) - 0xDC00;
+//                     const codepoint: char32_t = (this.high_surrogate << 10) + unicode_character + SURROGATE_OFFSET;
+//                     text.resize(this.high_start - 1);
+//                     text.appendString(String.fromCodePoint(codepoint));
+//                 }
+//             } else {
+//                 text.resize(initial - 1);
+//                 text.appendString(String.fromCodePoint(unicode_character));
+//             }
+//         }
+//     }
 
-    entity() {
-        const text = this.text;
-        const initial: size_t = this.start;
-        this.start = 0;
+//     entity() {
+//         const text = this.text;
+//         const initial: size_t = this.start;
+//         this.start = 0;
 
-        //assert(initial < text.size());
-        if (text.length - initial > entityMaximumLength) {
-            return;
-        }
+//         //assert(initial < text.size());
+//         if (text.length - initial > entityMaximumLength) {
+//             return;
+//         }
 
-        if (text.at(initial) === byte_hash) {
-            this.numericEntity(initial);
-        } else {
-            this.namedEntity(initial);
-        }
-    }
+//         if (text.at(initial) === byte_hash) {
+//             this.numericEntity(initial);
+//         } else {
+//             this.namedEntity(initial);
+//         }
+//     }
 
-    push_back(ch: UTF8Byte) {
-        const text = this.text;
-        text.appendBytes([ch]);
-        if (ch === byte_amp) {
-            this.start = text.length;
-        } else if (this.start && ch === byte_semi) {
-            this.entity();
-        }
-    }
+//     push_back(ch: UTF8Byte) {
+//         const text = this.text;
+//         text.appendBytes([ch]);
+//         if (ch === byte_amp) {
+//             this.start = text.length;
+//         } else if (this.start && ch === byte_semi) {
+//             this.entity();
+//         }
+//     }
 
-    appendBytes(data: UTF8Bytes) {
-        for (const ch of data) {
-            this.push_back(ch);
-        }
-        return this;
-    }
+//     appendBytes(data: UTF8Bytes) {
+//         for (const ch of data) {
+//             this.push_back(ch);
+//         }
+//         return this;
+//     }
 
-    appendString(text: string) {
-        const data = new TextEncoder().encode(text);
-        return this.appendBytes(data);
-    }
+//     appendString(text: string) {
+//         const data = new TextEncoder().encode(text);
+//         return this.appendBytes(data);
+//     }
 
-    append(text: UTF8String) {
-        const data = text.value;
-        return this.appendBytes(data);
-    }
-}
+//     append(text: UTF8String) {
+//         const data = text.value;
+//         return this.appendBytes(data);
+//     }
+// }
 
-export function decodeEntitiesA(text: string): string {
-    const decoder = new EntityDecoder(text.length);
-    decoder.appendString(text);
-    return decoder.text.toString();
-}
+// export function decodeEntitiesA(text: string): string {
+//     const decoder = new EntityDecoder(text.length);
+//     decoder.appendString(text);
+//     return decoder.text.toString();
+// }
 
 enum EPState {
     start,
@@ -345,7 +345,7 @@ enum EPState {
     decimal,
 };
 
-export function* parseEntities(data: UTF8Array, position: size_t = 0) {
+export function* decodeEntitiesU8(data: UTF8Array, position: size_t = 0) {
     const checkNamesWithoutSemicolon = true;
     const last = data.length - 1;
     let pos = position;
@@ -358,7 +358,7 @@ export function* parseEntities(data: UTF8Array, position: size_t = 0) {
     let high_last: size_t = 0;
     let high_surrogate: char32_t = 0;
 
-    function postnumeric(): char32_t | undefined {
+    function handleNumeric(): char32_t | undefined {
         // Control characters are mapped to useful characters from CP1252
         if (0x80 <= unicode_character && unicode_character <= 0x9f) {
             const index = unicode_character - 0x80;
@@ -424,7 +424,7 @@ export function* parseEntities(data: UTF8Array, position: size_t = 0) {
             }
             case EPState.hex: {
                 if (character === byte_semi) {
-                    let entity = postnumeric();
+                    let entity = handleNumeric();
                     if (entity !== undefined) {
                         yield new UTF8String(String.fromCodePoint(entity));
                         first = pos + 1;
@@ -447,7 +447,7 @@ export function* parseEntities(data: UTF8Array, position: size_t = 0) {
             }
             case EPState.decimal: {
                 if (character === byte_semi) {
-                    let entity = postnumeric();
+                    let entity = handleNumeric();
                     if (entity !== undefined) {
                         yield new UTF8String(String.fromCodePoint(entity));
                         first = pos + 1;
@@ -511,7 +511,7 @@ export function* parseEntities(data: UTF8Array, position: size_t = 0) {
 export function decodeEntities(text: string): string {
     const input = new UTF8String(text);
     const result = new UTF8String(input.length);
-    for (const piece of parseEntities(input.value)) {
+    for (const piece of decodeEntitiesU8(input.value)) {
         result.append(piece);
     }
     return result.toString();
