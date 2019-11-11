@@ -111,6 +111,12 @@ class EntityEncoder {
 
 }
 
+export function encodeEntities(text: string): string {
+    const encoder = new EntityEncoder(text.length);
+    encoder.appendString(text);
+    return encoder.text.toString();
+}
+
 type size_t = number;
 type char32_t = number;
 
@@ -367,3 +373,74 @@ export function decodeEntities(text: string): string {
     }
     return result.toString();
 }
+
+enum NWState {
+    start,
+    startPiece,
+    initialWhitespace,
+    interiorWhitespace,
+    content
+};
+
+function* normalizeWhitespace(pieces: Iterable<UTF8Array>) {
+    const space = u8(" ");
+    let state: NWState = NWState.start;
+
+    let first = 0;
+    for (const piece of pieces) {
+        let pos: size_t = 0;
+        while (pos < piece.length) {
+            const character = piece[pos];
+            switch (state) {
+                case NWState.start:
+                    if (spaces.includes(character)) {
+                        first = pos + 1;
+                    } else {
+                        first = pos;
+                        state = NWState.content;
+                    }
+                    break;
+                case NWState.startPiece:
+                    if (spaces.includes(character)) {
+                        first = pos;
+                        state = NWState.interiorWhitespace;
+                    } else {
+                        first = pos;
+                        state = NWState.content;
+                    }
+                    break;
+                case NWState.content:
+                    if (spaces.includes(character)) {
+                        yield piece.subarray(first, pos);
+                        first = pos;
+                        state = NWState.interiorWhitespace;
+                    }
+                    break;
+                case NWState.interiorWhitespace:
+                    if (!spaces.includes(character)) {
+                        yield space;
+                        first = pos;
+                        state = NWState.content;
+                    }
+                    break;
+            }
+            ++pos;
+        } // while
+
+        switch (state) {
+            case NWState.content:
+                yield piece.subarray(first, pos);
+                state = NWState.startPiece;
+                break;
+        }
+    } // for
+}
+
+// export function decodeEntities(text: string): string {
+//     const input = new UTF8String(text);
+//     const result = new UTF8String(input.length);
+//     for (const piece of decodeEntitiesU8(input.value)) {
+//         result.append(piece);
+//     }
+//     return result.toString();
+// }

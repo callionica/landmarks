@@ -30,6 +30,7 @@ import { LandmarksHandler, BaseHandler } from "../landmarks-handler.js"
 import { LandmarksRange, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksEndTag, LandmarksStartTag, LandmarksEndTagPrefix, TagID, EndTagState } from "../landmarks-parser-types.js";
 import { LandmarksParser } from "../landmarks-parser.js";
 import { xml } from "../landmarks-policy-ml.js";
+import { encodeEntities } from "../landmarks-entities.js";
 
 function first(text: string, count: number = 1) {
     return text.substring(0, count);
@@ -44,6 +45,7 @@ class LandmarksString {
     // it won't start with whitespace
     // if it contains \n, it's deliberate; \n shouldn't be merged or ignored
     // space at the end can be merged or ignored
+    // &<> are encoded
     private text: string = "";
     private trailingWhitespace: string = "";
 
@@ -68,6 +70,8 @@ class LandmarksString {
         if (text.length <= 0) {
             return;
         }
+
+        text = encodeEntities(text);
 
         const normalizedText = text.replace(/\s+/g, " ");
 
@@ -94,8 +98,12 @@ class LandmarksString {
         }
     }
 
-    // Use appendCloseTag if you want to add the close tag before any trailing whitespace
-    // Otherwise just use append
+    appendOpenTag(tag: string) {
+        this.text += this.trailingWhitespace + "<" + tag + ">";
+        this.trailingWhitespace = "";
+    }
+
+    // appendCloseTag adds the close tag before any trailing whitespace
     appendCloseTag(tag: string) {
         this.text += "</" + tag + ">";
         // If there was trailingWhitespace it's now after the tag
@@ -223,7 +231,7 @@ class TTML extends BaseHandler {
         if (e.localName === "span" && e.color) {
             const subtitle = this.current("p");
             if (subtitle && subtitle.content) {
-                subtitle.content.append(`<c.${e.color}>`);
+                subtitle.content.appendOpenTag(`c.${e.color}`);
             }
         }
 
