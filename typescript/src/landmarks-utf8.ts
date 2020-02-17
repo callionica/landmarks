@@ -22,7 +22,7 @@ export class UTF8String {
     constructor(buffer: UTF8Array, length?: number)
     // Copy a string
     constructor(text: string)
-    // Create a new expty buffer
+    // Create a new empty buffer
     constructor(capacity?: number)
     constructor(first: any, length?: number) {
         if (typeof first === "object") {
