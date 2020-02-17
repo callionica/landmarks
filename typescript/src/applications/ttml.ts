@@ -5,7 +5,7 @@
 // We make some simplifying assumptions about the input TTML:
 // 1. We can ignore XML namespaces and just use localName to recognize the interesting elements
 // 2. We can ignore region/animation/audio/language/metadata and only handle color (applied directly or through a style; and only text color, not background color)
-// 3. We can assume that colors are provided as named colors (that would be valid as CSS class names)
+// 3. We can assume that colors are provided as named colors that would be valid as CSS class names (or as one of a few hex colors which we map to names)
 // 4. We can ignore any style information applied on "body", "div", "region" elements and assume that all styles & colors are applied on "p" or "span" elements
 // 5. We can ignore "xml:space" attributes and treat content as "xml:space=default"
 // 6. We can assume that timing information is supplied in "begin" and "end" attributes on "p" elements (not "dur" attributes and not on other elements)
@@ -110,6 +110,28 @@ class LandmarksString {
     }
 }
 
+function nameColor(color: string) : string {
+    interface ILookup {
+        [index: string]: string | undefined;
+    }
+
+    const colors = {
+        "#FFFFFF" : "white",
+        "#000000" : "black",
+        "#FFFF00" : "yellow",
+        "#00FFFF" : "cyan",
+        "#FF0000" : "red",
+        "#00FF00" : "green",
+        "#0000FF" : "blue",
+    } as ILookup;
+
+    const found = colors[color.toUpperCase()];
+    if (found) {
+        return found;
+    }
+    return color;
+}
+
 type E = { localName: string, content?: LandmarksString };
 type A = { id?: string, style?: string, color?: string, begin?: string, end?: string };
 type Element = E & A;
@@ -208,9 +230,11 @@ class TTML extends BaseHandler {
 
         const qn = attribute.getQualifiedName(document);
         switch (qn.localName) {
+            case "color":
+                    e[qn.localName] = nameColor(attribute.value.getText(document));
+                    break;
             case "id":
             case "style":
-            case "color":
             case "begin":
             case "end":
                 e[qn.localName] = attribute.value.getText(document);
