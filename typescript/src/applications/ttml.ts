@@ -111,11 +111,8 @@ class LandmarksString {
 }
 
 function nameColor(color: string) : string {
-    interface ILookup {
-        [index: string]: string | undefined;
-    }
 
-    const colors = {
+    const colors : { [index: string]: string | undefined; } = {
         "#FFFFFF" : "white",
         "#000000" : "black",
         "#FFFF00" : "yellow",
@@ -123,7 +120,7 @@ function nameColor(color: string) : string {
         "#FF0000" : "red",
         "#00FF00" : "green",
         "#0000FF" : "blue",
-    } as ILookup;
+    };
 
     const found = colors[color.toUpperCase()];
     if (found) {
