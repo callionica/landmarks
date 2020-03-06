@@ -49,6 +49,35 @@
 				document.getElementById("download").href = vttURL;
 			}
 
+			function initFileDrop() {
+				function ondragover(evt) {
+					evt.preventDefault();
+				}
+
+				function ondrop(evt) {
+					evt.preventDefault();
+
+					let files = [...evt.dataTransfer.files];
+					let file = files[0];
+
+					if (file) {
+						let reader = new FileReader();
+  						reader.onload = function (event) {
+							let text = event.target.result;
+							document.getElementById("ttml").value = text;
+							convertToWebVTT();
+						};
+  						reader.readAsText(file);
+					}
+				}
+
+				let target = document.body;
+				target.ondragover = ondragover;
+				target.ondrop = ondrop;
+			}
+
+			initFileDrop();
+
 			convertToWebVTT();
 
 			document.getElementById("ttml").oninput = convertToWebVTT;
