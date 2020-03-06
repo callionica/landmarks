@@ -63,6 +63,12 @@
 					if (file) {
 						let reader = new FileReader();
   						reader.onload = function (event) {
+							let name = file.name.replace(/[.]((ttml)|(xml))$/i, ".vtt");
+							if (!name.endsWith(".vtt")) {
+								name = name + ".vtt";
+							}
+							document.getElementById("download").download = name;
+
 							let text = event.target.result;
 							document.getElementById("ttml").value = text;
 							convertToWebVTT();
@@ -106,7 +112,7 @@
 <body>
 	<h1>LANDMARKS</h1>
 	<h2>Convert TTML to WebVTT</h2>
-	<p>Enter TTML here:</p>
+	<p>Enter TTML or drop a TTML file here:</p>
 
 <textarea id="ttml" title="TTML" style="width:100%; height: 120px;">
 <body>
@@ -115,7 +121,7 @@
 </body>				
 </textarea>
 
-	<p><a id="download" download="subtitles.vtt" href="">Download subtitles.vtt</a></p>
+	<p><a id="download" download="subtitles.vtt" href="">Download VTT subtitles</a></p>
 	<div id="webvtt"></div>
 </body>
 
