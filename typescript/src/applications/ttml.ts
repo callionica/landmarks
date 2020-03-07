@@ -116,6 +116,7 @@ function nameColor(color: string) : string {
         "#FFFFFF" : "white",
         "#000000" : "black",
         "#FFFF00" : "yellow",
+        "#FF00FF" : "magenta",
         "#00FFFF" : "cyan",
         "#FF0000" : "red",
         "#00FF00" : "green",
