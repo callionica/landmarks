@@ -4,10 +4,15 @@ import { LandmarksPolicy, LandmarksPolicyData, Policy } from "./landmarks-policy
 import { LandmarksRange } from "./landmarks-parser-types.js";
 
 const spaces = " \t\n\f\r";
+const attributeDelimiters = [
+    { opener: "'", closers: "'"},
+    { opener: '"', closers: '"'}
+];
 
 function html5_(): LandmarksPolicy {
     return new Policy({
         spaces: spaces,
+        attributeDelimiters: attributeDelimiters,
         voidElements: ["area", "base", "br", "col", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"],
         contentElements: [
             "html",
@@ -165,6 +170,7 @@ export const html5: LandmarksPolicy = html5_();
 
 export const xml: LandmarksPolicy = new Policy({
     spaces: spaces,
+    attributeDelimiters: attributeDelimiters,
     voidElements: [],
     contentElements: [],
     opaqueElements: [],

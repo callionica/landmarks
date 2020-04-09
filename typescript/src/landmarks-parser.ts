@@ -16,13 +16,8 @@ function LandmarksParserConstants(spaces: string = " \t\n\f\r") {
     const attribute_spaces = spaces + "/";
     const attribute_name_end = attribute_spaces + ">=";
     const attribute_value_end = spaces + ">";
-    /*
-    Can customize the delimiters (quote marks) for an attribute value here,
-    but note that the parser currently requires the closing delimiter
-    to be the same as the opening delimiter (following HTML) so there
-    is limited value in including open/close quote pairs currently
-    */
-    const attribute_value_delimiters = `"'`;
+
+    // Can customize the delimiters (quote marks) for an attribute value in the policy
 
     const element_name_end = attribute_spaces + ">";
 
@@ -52,7 +47,6 @@ function LandmarksParserConstants(spaces: string = " \t\n\f\r") {
         attribute_spaces,
         attribute_name_end,
         attribute_value_end,
-        attribute_value_delimiters,
         element_name_end,
         open,
         open_end_tag,
@@ -147,7 +141,7 @@ export function LandmarksParser(policy: LandmarksPolicy): IParser {
             const close = constants.close;
             const attribute_name_end = constants.attribute_name_end;
             const attribute_value_end = constants.attribute_value_end;
-            const attribute_value_delimiters = constants.attribute_value_delimiters;
+            const attribute_value_delimiters = policy.attributeValueOpeners;
 
             let search_position: LandmarksPosition = position;
             let attr: LandmarksAttribute | null = null;
@@ -228,7 +222,10 @@ export function LandmarksParser(policy: LandmarksPolicy): IParser {
                     if (value_start >= length) {
                         value_start = npos;
                     }
-                    value_end = find(document, s, value_start); // Currently require end quote to be same as start quote as in HTML
+                    // The policy is able to customize attribute value delimiters (quotes)
+                    const closing_value_delimiters = policy.getAttributeValueClosers(s);
+                    value_end = findFirstOf(document, closing_value_delimiters, value_start);
+                    
                     if (value_end !== npos) {
                         search_position = value_end + 1;
                     } else {

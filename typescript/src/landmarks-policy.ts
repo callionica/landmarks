@@ -12,6 +12,10 @@ import { TagID, LandmarksPosition, npos } from "./landmarks-parser-types.js";
 // Which elements can be autoclosed or autoclose other elements
 export interface LandmarksPolicy {
     readonly spaces : string;
+    readonly attributeValueOpeners: string;
+
+    // Given the opener for an attribute value, returns the possible closing values
+    getAttributeValueClosers(opener: string) : string;
 
     // pos is the position after markup < or </
     // If the text following that markup represents a valid element name, return the position of the first character
@@ -75,6 +79,7 @@ LandmarksPolicyData is a slightly easier interface for defining parser policies
  */
 export interface LandmarksPolicyData {
     spaces: string;
+    attributeDelimiters: readonly { opener: string, closers: string }[];
     voidElements: readonly string[];
     contentElements: readonly string[];
     opaqueElements: readonly string[];
@@ -94,13 +99,23 @@ const charCode = {
 export class Policy implements LandmarksPolicy {
 
     private readonly data: LandmarksPolicyData;
+    private readonly attributeOpeners : string;
 
     constructor(data: LandmarksPolicyData) {
         this.data = data;
+        this.attributeOpeners = data.attributeDelimiters.map(o => o.opener).join("");
     }
 
     get spaces() : string {
         return this.data.spaces;
+    }
+
+    get attributeValueOpeners() : string {
+        return this.attributeOpeners;
+    }
+
+    getAttributeValueClosers(opener: string) : string {
+        return this.data.attributeDelimiters.find(o => o.opener === opener)!.closers;
     }
 
     getElementNameStart(text: string, pos: number): number {
