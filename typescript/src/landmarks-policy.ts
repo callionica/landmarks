@@ -4,6 +4,7 @@ import { TagID, LandmarksPosition, npos } from "./landmarks-parser-types.js";
 
 // An interface that allows you to get help from the compiler when implementing a Policy used by the Parser
 // A Policy controls various aspects of the Parser's behavior for example:
+// Which characters are valid as quotes for delimiting attribute values
 // Which characters can be ignored between < and the start of an element name
 // Which characters are valid at the start of an element name
 // Which element names are considered the same (case-sensitivity)
@@ -12,9 +13,13 @@ import { TagID, LandmarksPosition, npos } from "./landmarks-parser-types.js";
 // Which elements can be autoclosed or autoclose other elements
 export interface LandmarksPolicy {
     readonly spaces : string;
+
+    // The set of characters that can be used as opening quotes for attribute values
+    // For example, HTML & XML allow " and '
     readonly attributeValueOpeners: string;
 
-    // Given the opener for an attribute value, returns the possible closing values
+    // Given the opening quote for an attribute value, returns the set of characters that can close the attribute value
+    // For example, HTML and XML only allow the same quote character to close the value as opened it
     getAttributeValueClosers(opener: string) : string;
 
     // pos is the position after markup < or </
