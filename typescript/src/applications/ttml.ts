@@ -1,3 +1,5 @@
+// ALL RIGHTS RESERVED
+
 // A simple TTML subtitle parser that converts TTML to WEBVTT
 //
 // "ttmlToWebVTT(string) : string" converts a TTML string to a WebVTT string
