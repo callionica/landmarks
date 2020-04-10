@@ -1,3 +1,5 @@
+// ALL RIGHTS RESERVED
+
 export type UTF8Array = Uint8Array;
 export type UTF8Byte = number;
 export type UTF8Bytes = UTF8Array | [UTF8Byte]
