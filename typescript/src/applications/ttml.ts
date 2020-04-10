@@ -165,9 +165,9 @@ function webvttTime(time: string, framesPerSecond: number = 25) {
 
 type Cue = {
     id : string;
-    begin : string;
-    end : string;
-    content : string;
+    startTime : string;
+    endTime : string;
+    text : string;
 };
 
 class TTML extends BaseHandler {
@@ -301,13 +301,13 @@ class TTML extends BaseHandler {
             }
             return {
                 id: `${n + 1}`,
-                begin: webvttTime(subtitle.begin!),
-                end: webvttTime(subtitle.end!),
-                content: `${styleStart}${subtitle.content.trimmed}${styleEnd}`
+                startTime: webvttTime(subtitle.begin!),
+                endTime: webvttTime(subtitle.end!),
+                text: `${styleStart}${subtitle.content.trimmed}${styleEnd}`
             };
         });
         const vtt = this.cues.map(cue => {
-            return `${cue.id}\n${cue.begin} --> ${cue.end}\n${cue.content}\n\n`;
+            return `${cue.id}\n${cue.startTime} --> ${cue.endTime}\n${cue.text}\n\n`;
         });
         this.webVTT = "WEBVTT\n\n" + vtt.join("");
     }
