@@ -163,6 +163,13 @@ function webvttTime(time: string, framesPerSecond: number = 25) {
     return `${h}:${m}:${s}.${ms}`;
 }
 
+type Cue = {
+    id : string;
+    begin : string;
+    end : string;
+    content : string;
+};
+
 class TTML extends BaseHandler {
     webVTT: string = "";
 
@@ -170,6 +177,8 @@ class TTML extends BaseHandler {
     private subtitles: Subtitle[] = [];
 
     private elements: Element[] = [];
+
+    private cues: Cue[] = [];
 
     get path() : string {
         const separator = " > ";
@@ -282,7 +291,7 @@ class TTML extends BaseHandler {
     }
 
     EndOfInput(document: string, open_elements: TagID[]) {
-        const vtt = this.subtitles.map((subtitle, n) => {
+        this.cues = this.subtitles.map((subtitle, n) => {
             let styleStart = "";
             let styleEnd = "";
             const color = subtitle.color;
@@ -290,7 +299,15 @@ class TTML extends BaseHandler {
                 styleStart = `<c.${color}>`;
                 styleEnd = `</c>`;
             }
-            return `${n + 1}\n${webvttTime(subtitle.begin!)} --> ${webvttTime(subtitle.end!)}\n${styleStart}${subtitle.content.trimmed}${styleEnd}\n\n`;
+            return {
+                id: `${n + 1}`,
+                begin: webvttTime(subtitle.begin!),
+                end: webvttTime(subtitle.end!),
+                content: `${styleStart}${subtitle.content.trimmed}${styleEnd}`
+            };
+        });
+        const vtt = this.cues.map(cue => {
+            return `${cue.id}\n${cue.begin} --> ${cue.end}\n${cue.content}\n\n`;
         });
         this.webVTT = "WEBVTT\n\n" + vtt.join("");
     }
