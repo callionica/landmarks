@@ -76,6 +76,6 @@ You can extract useful data from documents that are ill-formed XML or HTML using
 
 This demonstration of the TypeScript/Javascript version of Landmarks converts TTML, an XML format for describing subtitles, into WebVTT, an HTML-related subtitle format for use on the web.
 
-The source code is at: [](https://github.com/callionica/landmarks/blob/master/typescript/src/applications/ttml.ts)
+The source code is at: [https://github.com/callionica/landmarks/blob/master/typescript/src/applications/ttml.ts](https://github.com/callionica/landmarks/blob/master/typescript/src/applications/ttml.ts)
 
-The live demo is at: [](https://callionica.github.io/landmarks/demo/ttml.html)
+The live demo is at: [https://callionica.github.io/landmarks/demo/ttml.html](https://callionica.github.io/landmarks/demo/ttml.html)
