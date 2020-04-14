@@ -69,3 +69,13 @@ You can truncate the input document at any point and feed the first part of the 
 ## 2. Error correction
 
 You can extract useful data from documents that are ill-formed XML or HTML using the Landmarks parser. Imagine documents that have been through a text-based search and replace that has messed up the end tags: you can use Landmarks' automatching end tags feature to ignore end tags completely. Perhaps you have documents that have been copy-pasted into and out of a word processor that replaced quotes with smart quotes: you can use Landmarks' attribute value delimiter customization to treat smart quotes like ordinary quotes.
+
+# Demos
+
+## TTML to WebVTT
+
+This demonstration of the TypeScript/Javascript version of Landmarks converts TTML, an XML format for describing subtitles, into WebVTT, an HTML-related subtitle format for use on the web.
+
+The source code is at: [](https://github.com/callionica/landmarks/blob/master/typescript/src/applications/ttml.ts)
+
+The live demo is at: [](https://callionica.github.io/landmarks/demo/ttml.html)
