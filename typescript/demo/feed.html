@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset='utf-8'>
+	<meta http-equiv='X-UA-Compatible' content='IE=edge'>
+	<title>Landmarks Parser - Convert Feed</title>
+	<meta name='viewport' content='width=device-width, initial-scale=1'>
+	<script type="module">
+		import { feedToHTML } from "../js/applications/feed.js";
+
+		const convertIt = feedToHTML;
+
+		function ready(doc, callback) {
+			// in case the document is already rendered
+			if (doc.readyState != 'loading') {
+				callback();
+			}
+			// modern browsers
+			else if (doc.addEventListener) {
+				doc.addEventListener('DOMContentLoaded', callback);
+			}
+			// IE <= 8
+			else {
+				doc.attachEvent('onreadystatechange', function () {
+					if (doc.readyState == 'complete') {
+						callback();
+					}
+				});
+			}
+		}
+
+		function init() {
+			function convert() {
+
+                // Get the input data
+				const input = document.getElementById("input").value;
+
+				// Convert
+				const output = convertIt(input);
+
+				// Create a BLOB so that we can create a URL
+				var blob = new Blob([output], { type: "text/html" });
+
+				// Create a URL from the BLOB
+				var url = URL.createObjectURL(blob);
+
+				// Update the display
+				document.getElementById("output").innerText = output;
+
+				// Allow converted data to be downloaded
+				document.getElementById("download").href = url;
+			}
+
+			function initFileDrop() {
+				function ondragover(evt) {
+					evt.preventDefault();
+				}
+
+				function ondrop(evt) {
+                    const outputExtension = ".html";
+
+					evt.preventDefault();
+
+					let files = [...evt.dataTransfer.files];
+					let file = files[0];
+
+					if (file) {
+						let reader = new FileReader();
+  						reader.onload = function (event) {
+							let name = file.name.replace(/[.]((rss)|(xml))$/i, outputExtension);
+							if (!name.endsWith(outputExtension)) {
+								name = name + outputExtension;
+							}
+							document.getElementById("download").download = name;
+
+							let text = event.target.result;
+							document.getElementById("input").value = text;
+							convert();
+						};
+  						reader.readAsText(file);
+					}
+				}
+
+				let target = document.body;
+				target.ondragover = ondragover;
+				target.ondrop = ondrop;
+			}
+
+			initFileDrop();
+
+			convert();
+
+			document.getElementById("input").oninput = convert;
+		}
+
+		ready(document, init);
+	</script>
+	<style>
+		body {
+			margin-left: 2vw;
+			margin-right: 2vw;
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+		}
+
+		textarea {
+			font-family: 'Courier New', Courier, monospace;
+			font-size: inherit;
+		}
+
+		#webvtt {
+			font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+		}
+	</style>
+</head>
+
+<body>
+	<h1>LANDMARKS</h1>
+	<h2>Convert feed</h2>
+	<p>Enter feed or drop a feed file here:</p>
+
+<textarea id="input" title="Feed" style="width:100%; height: 120px;">
+<body>
+<p begin="00:00:00.000" end="00:00:00.345">A single caption</p>
+<p begin="00:00:01.050" end="00:00:02.060">Another caption<br/>On 2 lines</p>	
+</body>				
+</textarea>
+
+<p>Download or view the converted feed here:</p>
+	<p><a id="download" download="feed.html" href="">Download</a></p>
+	<div id="output"></div>
+</body>
+
+</html>
