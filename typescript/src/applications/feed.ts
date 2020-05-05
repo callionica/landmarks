@@ -88,13 +88,14 @@ class LandmarksString {
     }
 }
 
-type E = { localName: string, };
+type E = { prefix: string, localName: string, item: any };
 type A = { };
 type Element = E & A;
 
 
 class Feed extends BaseHandler {
-    json: any = {};
+    channel: any = {};
+    items: any[] = [];
 
     private elements: Element[] = [];
 
@@ -118,24 +119,56 @@ class Feed extends BaseHandler {
         return undefined;
     }
 
+    CData(document: string, range: LandmarksRange) {
+        // We can do this because getDecodedText works nicely for CData ranges
+        this.Text(document, range);
+    }
+
     Text(document: string, range: LandmarksRange) {
-        
+        let i = this.current("item");
+        let item = i && i.item;
+
+        if (item) {
+            let props = ["title", "subtitle", "pubDate", "duration", "link", "guid"];
+            for (let prop of props) {
+                if (this.current(prop)) {
+                    item[prop] = range.getDecodedText(document);
+                }
+            }
+        } else {
+            let c = this.current("channel");
+            if (c) {
+                let props = ["title", "subtitle", "pubDate"];
+                for (let prop of props) {
+                    if (this.current(prop)) {
+                        this.channel[prop] = range.getDecodedText(document);
+                    }
+                }   
+            }
+        }
     }
 
     StartTagPrefix(document: string, tag: LandmarksStartTagPrefix) {
         const qn = tag.getQualifiedName(document);
-        let element: Element = { localName: qn.localName };
+        let element: Element = { ...qn, item: { enclosure: {} } };
         this.elements.push(element);
 
         switch (element.localName) {
+            case "item":
+                this.items.push(element.item);
+                break;
         }
     }
 
     StartTagAttribute(document: string, attribute: LandmarksAttribute) {
-        const e = this.current()!;
+        let i = this.current("item");
+        let item = i && i.item;
 
+        const e = this.current()!;
         const qn = attribute.getQualifiedName(document);
-        switch (qn.localName) {
+
+        if (item && e.localName === "enclosure") {
+            item.enclosure[qn.localName] = attribute.value.getDecodedText(document);
         }
     }
 
@@ -167,5 +200,5 @@ export function feedToJSON(text: string) {
     const parser = LandmarksParser(xml);
     const handler = new Feed();
     parser.parse(text, handler);
-    return handler.json;
+    return JSON.stringify({ channel: handler.channel, items: handler.items }, null, 2);
 }
