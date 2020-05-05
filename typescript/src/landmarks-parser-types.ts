@@ -78,6 +78,14 @@ export class LandmarksRange {
     static invalid = new LandmarksRange(npos, npos);
 };
 
+export class LandmarksRangeCData extends LandmarksRange {
+    
+    getDecodedText(document: string) : string {
+        let text = this.getText(document);
+        return text.substring("<![CDATA[".length, text.length - "]]>".length);
+    }
+}
+
 class Nameable {
     readonly name: LandmarksRange;
 
