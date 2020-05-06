@@ -1,6 +1,7 @@
 // ALL RIGHTS RESERVED
 
 // A simple RSS feed parser that converts RSS to JSON
+// This example demonstrates early exit
 //
 // "feedToJSON(string) : string" converts an RSS feed string to JSON
 
@@ -210,9 +211,21 @@ class Feed extends BaseHandler {
         const qn = attribute.getQualifiedName(document);
 
         let item = this.item;
-        if (item && e.localName === "enclosure") {
-            item.enclosure[qn.localName] = attribute.value.getDecodedText(document);
+        if (item) {
+            if (e.localName === "enclosure") {
+                item.enclosure[qn.localName] = attribute.value.getDecodedText(document);
+            } else if (e.localName === "image" && qn.localName === "href") {
+                item.image = attribute.value.getDecodedText(document);
+            }
+        } else {
+            let channel = this.channel;
+            if (channel) {
+                if (e.localName === "image" && qn.localName === "href") {
+                    channel.data.image = attribute.value.getDecodedText(document);
+                }
+            }
         }
+
     }
 
     StartTag(document: string, tag: LandmarksStartTag) {
