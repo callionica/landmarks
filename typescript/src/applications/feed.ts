@@ -88,7 +88,9 @@ class LandmarksString {
     }
 }
 
-type Element = { prefix: string, localName: string, item?: any, channel?: any };;
+type Item = any;
+type Channel = { sent: boolean, data: any };
+type Element = { prefix: string, localName: string, item?: Item, channel?: Channel };
 
 interface FeedHandler {
     Channel(channel: any): void;
@@ -105,14 +107,34 @@ class Feed extends BaseHandler {
         this.feedHandler = feedHandler;
     }
 
+    // Returns the current item if there is one
+    get item(): any | undefined {
+        let c = this.current("item");
+        return c && c.item;
+    }
+
+    // Returns the current channel if there is one
+    get channel(): Channel | undefined {
+        let c = this.current("channel");
+        return c && c.channel;
+    }
+
     cleanupTag() {
         let c = this.current();
         let item = c && c.item;
         if (item) {
+            // Send the channel before sending the first item
+            let channel = this.channel;
+            if (channel && !channel.sent) {
+                channel.sent = true;
+                this.feedHandler.Channel(channel.data);
+            }
             this.feedHandler.Item(item);
         } else {
+            // Send the channel if there are no items
             let channel = c && c.channel;
-            if (channel) {
+            if (channel && !channel.sent) {
+                channel.sent = true;
                 this.feedHandler.Channel(channel);
             }
         }
@@ -146,10 +168,9 @@ class Feed extends BaseHandler {
     }
 
     Text(document: string, range: LandmarksRange) {
-        let i = this.current("item");
-        let item = i && i.item;
+        let item = this.item;
 
-        if (item) {
+        if (item !== undefined) {
             let props = ["title", "subtitle", "pubDate", "duration", "link", "guid"];
             for (let prop of props) {
                 if (this.current(prop)) {
@@ -157,13 +178,12 @@ class Feed extends BaseHandler {
                 }
             }
         } else {
-            let c = this.current("channel");
-            let channel = c && c.channel;
-            if (channel) {
+            let channel = this.channel;
+            if (channel !== undefined) {
                 let props = ["title", "subtitle", "pubDate"];
                 for (let prop of props) {
                     if (this.current(prop)) {
-                        channel[prop] = range.getDecodedText(document);
+                        channel.data[prop] = range.getDecodedText(document);
                     }
                 }
             }
@@ -180,18 +200,16 @@ class Feed extends BaseHandler {
                 element.item = { enclosure: {} };
                 break;
             case "channel":
-                element.channel = {};
+                element.channel = { sent: false, data: {} };
                 break;
         }
     }
 
     StartTagAttribute(document: string, attribute: LandmarksAttribute) {
-        let i = this.current("item");
-        let item = i && i.item;
-
         const e = this.current()!;
         const qn = attribute.getQualifiedName(document);
 
+        let item = this.item;
         if (item && e.localName === "enclosure") {
             item.enclosure[qn.localName] = attribute.value.getDecodedText(document);
         }
@@ -227,7 +245,7 @@ export function feedToJSON(text: string) {
         channel: {} as any,
         items: [] as any[],
         Channel(channel: any) {
-            channel = channel;
+            this.channel = channel;
         },
         Item(item: any): void {
             this.items.push(item);

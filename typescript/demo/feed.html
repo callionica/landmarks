@@ -40,7 +40,7 @@
 				const output = convertIt(input);
 
 				// Create a BLOB so that we can create a URL
-				var blob = new Blob([output], { type: "text/html" });
+				var blob = new Blob([output], { type: "application/json" });
 
 				// Create a URL from the BLOB
 				var url = URL.createObjectURL(blob);
@@ -58,7 +58,7 @@
 				}
 
 				function ondrop(evt) {
-                    const outputExtension = ".html";
+                    const outputExtension = ".json";
 
 					evt.preventDefault();
 
@@ -108,8 +108,9 @@
 			font-size: inherit;
 		}
 
-		#webvtt {
+		#output {
 			font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+			white-space: pre;
 		}
 	</style>
 </head>
