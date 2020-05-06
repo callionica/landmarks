@@ -88,18 +88,39 @@ class LandmarksString {
     }
 }
 
-type E = { prefix: string, localName: string, item: any };
-type A = { };
-type Element = E & A;
+type Element = { prefix: string, localName: string, item?: any, channel?: any };;
 
+interface FeedHandler {
+    Channel(channel: any): void;
+    Item(item: any): void;
+}
 
 class Feed extends BaseHandler {
-    channel: any = {};
-    items: any[] = [];
+    feedHandler: FeedHandler;
 
     private elements: Element[] = [];
 
-    get path() : string {
+    constructor(feedHandler: FeedHandler) {
+        super();
+        this.feedHandler = feedHandler;
+    }
+
+    cleanupTag() {
+        let c = this.current();
+        let item = c && c.item;
+        if (item) {
+            this.feedHandler.Item(item);
+        } else {
+            let channel = c && c.channel;
+            if (channel) {
+                this.feedHandler.Channel(channel);
+            }
+        }
+
+        this.elements.pop();
+    }
+
+    get path(): string {
         const separator = " > ";
         return separator + this.elements.map(e => e.localName).join(separator);
     }
@@ -137,25 +158,29 @@ class Feed extends BaseHandler {
             }
         } else {
             let c = this.current("channel");
-            if (c) {
+            let channel = c && c.channel;
+            if (channel) {
                 let props = ["title", "subtitle", "pubDate"];
                 for (let prop of props) {
                     if (this.current(prop)) {
-                        this.channel[prop] = range.getDecodedText(document);
+                        channel[prop] = range.getDecodedText(document);
                     }
-                }   
+                }
             }
         }
     }
 
     StartTagPrefix(document: string, tag: LandmarksStartTagPrefix) {
         const qn = tag.getQualifiedName(document);
-        let element: Element = { ...qn, item: { enclosure: {} } };
+        let element: Element = { ...qn };
         this.elements.push(element);
 
         switch (element.localName) {
             case "item":
-                this.items.push(element.item);
+                element.item = { enclosure: {} };
+                break;
+            case "channel":
+                element.channel = {};
                 break;
         }
     }
@@ -177,7 +202,7 @@ class Feed extends BaseHandler {
 
         if (tag.isSelfClosing) {
             // There won't be an EndTag to remove the item from the stack
-            this.elements.pop();
+            this.cleanupTag();
         }
     }
 
@@ -189,7 +214,7 @@ class Feed extends BaseHandler {
         // A matching end tag means we have a current element
         const e = this.current()!;
 
-        this.elements.pop();
+        this.cleanupTag();
     }
 
     EndOfInput(document: string, open_elements: TagID[]) {
@@ -197,8 +222,30 @@ class Feed extends BaseHandler {
 }
 
 export function feedToJSON(text: string) {
+    const maximumItems = 100;
+    const hndlr = {
+        channel: {} as any,
+        items: [] as any[],
+        Channel(channel: any) {
+            channel = channel;
+        },
+        Item(item: any): void {
+            this.items.push(item);
+            if (this.items.length === maximumItems) {
+                throw this;
+            }
+        }
+    };
     const parser = LandmarksParser(xml);
-    const handler = new Feed();
-    parser.parse(text, handler);
-    return JSON.stringify({ channel: handler.channel, items: handler.items }, null, 2);
+    const handler = new Feed(hndlr);
+    try {
+        parser.parse(text, handler);
+    } catch (e) {
+        if (e === hndlr) {
+            // expected - early exit when we reached maximumItems
+        } else {
+            throw e;
+        }
+    }
+    return JSON.stringify({ channel: hndlr.channel, items: hndlr.items }, null, 2);
 }
