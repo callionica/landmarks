@@ -172,7 +172,7 @@ class Feed extends BaseHandler {
         let item = this.item;
 
         if (item !== undefined) {
-            let props = ["title", "subtitle", "pubDate", "duration", "link", "guid"];
+            let props = ["title", "description", "subtitle", "summary", "pubDate", "duration", "link", "guid"];
             for (let prop of props) {
                 if (this.current(prop)) {
                     item[prop] = range.getDecodedText(document);
@@ -181,7 +181,7 @@ class Feed extends BaseHandler {
         } else {
             let channel = this.channel;
             if (channel !== undefined) {
-                let props = ["title", "subtitle", "pubDate"];
+                let props = ["title", "description", "subtitle", "summary", "pubDate"];
                 for (let prop of props) {
                     if (this.current(prop)) {
                         channel.data[prop] = range.getDecodedText(document);
@@ -252,9 +252,8 @@ class Feed extends BaseHandler {
     }
 }
 
-export function feedToJSON(text: string) {
-    const maximumItems = 100;
-    const hndlr = {
+export function feedToJSON(text: string, maximumItems: number = -1) {
+    const feedHandler = {
         channel: {} as any,
         items: [] as any[],
         Channel(channel: any) {
@@ -268,15 +267,15 @@ export function feedToJSON(text: string) {
         }
     };
     const parser = LandmarksParser(xml);
-    const handler = new Feed(hndlr);
+    const landmarksHandler = new Feed(feedHandler);
     try {
-        parser.parse(text, handler);
+        parser.parse(text, landmarksHandler);
     } catch (e) {
-        if (e === hndlr) {
+        if (e === feedHandler) {
             // expected - early exit when we reached maximumItems
         } else {
             throw e;
         }
     }
-    return JSON.stringify({ channel: hndlr.channel, items: hndlr.items }, null, 2);
+    return JSON.stringify({ channel: feedHandler.channel, items: feedHandler.items }, null, 2);
 }
