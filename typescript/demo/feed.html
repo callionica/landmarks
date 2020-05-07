@@ -11,7 +11,7 @@
 
 		const convertIt = feedToJSON;
 
-		function strip(html){
+		function strip(html) {
 			let doc = new DOMParser().parseFromString(html, 'text/html');
 			return doc.body.textContent || "";
 		}
@@ -74,7 +74,7 @@
 		function init() {
 			function convert() {
 
-                // Get the input data
+				// Get the input data
 				const input = document.getElementById("input").value;
 
 				// Convert
@@ -112,7 +112,7 @@
 				}
 
 				function ondrop(evt) {
-                    const outputExtension = ".json";
+					const outputExtension = ".json";
 
 					evt.preventDefault();
 
@@ -121,7 +121,7 @@
 
 					if (file) {
 						let reader = new FileReader();
-  						reader.onload = function (event) {
+						reader.onload = function (event) {
 							let name = file.name.replace(/[.]((rss)|(xml))$/i, outputExtension);
 							if (!name.endsWith(outputExtension)) {
 								name = name + outputExtension;
@@ -132,7 +132,7 @@
 							document.getElementById("input").value = text;
 							convert();
 						};
-  						reader.readAsText(file);
+						reader.readAsText(file);
 					}
 				}
 
@@ -142,6 +142,14 @@
 			}
 
 			initFileDrop();
+
+			let feeds = document.getElementById("feeds");
+			feeds.onchange = function () {
+				fetch(feeds.value).then(response => response.text()).then(data => {
+					document.getElementById("input").value = data;
+					convert();
+				});
+			};
 
 			convert();
 
@@ -176,16 +184,24 @@
 			text-decoration: none;
 			color: inherit;
 		}
-
 	</style>
 </head>
 
 <body>
 	<h1>LANDMARKS</h1>
 	<h2>Convert feed</h2>
-	<p>Enter feed or drop a feed file here:</p>
+	<select id="feeds">
+		<option value="https://atp.fm/episodes?format=rss">ATP - Accidental Tech Podcast</option>
+		<option value="https://rss.acast.com/historyextra" selected>History Extra</option>
+		<option value="https://daringfireball.net/thetalkshow/rss">Daring Fireball</option>
+		<option value="https://podcasts.files.bbci.co.uk/p04sj2pt.rss">Intrigue</option>
+		<option value="http://feeds.feedburner.com/dancarlin/history?format=xml">Hardcore History</option>
+		<option value="https://feeds.megaphone.fm/lore">Lore</option>
+		<option value="http://feeds.megaphone.fm/BKS3925808083">Back Story</option>
+	</select>
+	<p>Pick a feed, enter a feed, or drop a feed file here:</p>
 
-<textarea id="input" title="Feed" style="width:100%; height: 120px;">
+	<textarea id="input" title="Feed" style="width:100%; height: 120px;">
 	<?xml version="1.0" encoding="UTF-8"?>
 	<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:media="http://search.yahoo.com/mrss/" xmlns:acast="https://schema.acast.com/1.0/" xmlns:podaccess="https://schema-access.acast.com/1.0/" xmlns:pingback="https://podping.info/specification/1">
 		<channel>
@@ -15818,7 +15834,7 @@
 	</rss>			
 </textarea>
 
-<p>Download or view the converted feed here:</p>
+	<p>Download or view the converted feed here:</p>
 	<p><a id="download" download="feed.html" href="">Download</a></p>
 	<div id="formatted-output"></div>
 	<div id="output"></div>
