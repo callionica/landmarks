@@ -131,17 +131,57 @@
 			return title.replace(/ podcast$/i, "");
 		}
 
-		function channelToHTML(channel) {
+		function schedule(dates) {
+			// TODO - needs more work
+			let min = Math.min(...dates);
+			let max = Math.max(...dates);
+			let avg = (max - min)/dates.length;
+			let days = avg/(24*60*60*1000);
+
+			let bounds = [
+				[100, "Periodically"],
+				[ 40, "Quarterly"],
+				[ 17, "Monthly"],
+				[ 12, "Twice a month"],
+				[  9, "Three a month"],
+				[  4, "Weekly"],
+				[  2.75, "Twice weekly"],
+				[  1.1, "Three weekly"],
+				[  0, "Daily"],
+			];
+
+			let result = 0;
+			for (let bound of bounds) {
+				if (days > bound[0]) {
+					result = bound[1];
+					break;
+				}
+			}
+
+			return result;
+		}
+
+		function channelToHTML(channel, items) {
 			let t = `<h1 class="title"></h1>
+			<div>
+			<div class="content">
 			<p class="subtitle"></p>
+			<p class="details"><span class="episodes"></span> • <span class="schedule"></span></p>
+			</div>
 			<img class="image">
+			</div>
 			`;
+
+			let dates = items.slice(0, 20).map(i => new Date(i.pubDate));
+			let sch = schedule(dates);
 
 			let e = document.createElement("div");
 			e.className = "channel";
 			e.innerHTML = t;
 			e.querySelector(".title").innerText = strip(channel.title);
 			e.querySelector(".subtitle").innerText = strip(channel.subtitle || channel.description);
+			e.querySelector(".episodes").innerText = `${items.length} eps`;
+			e.querySelector(".schedule").innerText = sch;
 			e.querySelector(".image").src = strip(channel.image);
 
 			return e;
@@ -229,7 +269,7 @@
 				let fo = document.getElementById("formatted-output");
 				fo.innerHTML = "";
 
-				fo.append(channelToHTML(o.channel));
+				fo.append(channelToHTML(o.channel, o.items));
 
 				for (let item of o.items) {
 					fo.append(itemToHTML(o.channel, item));
@@ -333,9 +373,6 @@
 			object-fit: contain;
 			vertical-align: top;
 			display: inline-block;
-			/*padding-top: 0.4vw;*/
-			/*background-color: black;*/
-			/*border-radius: 10%;*/
 		}
 
 		h1 {
@@ -365,6 +402,15 @@
 			
 		}
 
+		.channel h1 {
+			color: var(--brown);
+		}
+
+		.channel .content {
+			margin-left: 0;
+			margin-right: 2vw;
+		}
+
 		.details {
 			color: var(--ink-3);
 			padding-top: calc(1 * var(--adjustment, 0)); /* Visual adjust to counter .content's adjustment */
@@ -377,6 +423,11 @@
 		}
 
 		.item {
+			padding: 2vw;
+			padding-bottom: 3vw;
+		}
+
+		.channel {
 			padding: 2vw;
 			padding-bottom: 3vw;
 		}
