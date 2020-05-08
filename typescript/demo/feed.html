@@ -100,6 +100,17 @@
 			return `${hm.minutes} ${m}`;
 		}
 
+		let dateFormatWithYear = Intl.DateTimeFormat(undefined, { year: "numeric", month: "short", day: "numeric"});
+		let dateFormatWithoutYear = Intl.DateTimeFormat(undefined, { month: "short", day: "numeric"});
+
+		function formatHumanDate(date) {
+			let now = new Date();
+			if (date.getFullYear() == now.getFullYear()) {
+				return dateFormatWithoutYear.format(date);
+			}
+			return dateFormatWithYear.format(date);
+		}
+
 		function strip(html) {
 			let doc = new DOMParser().parseFromString(html, 'text/html');
 			return doc.body.textContent || "";
@@ -150,7 +161,8 @@
 </a>
 `;
 
-			let date = simplifyDate(strip(item.pubDate));
+			let date = new Date(strip(item.pubDate));
+			let dateYYYMMDD = simplifyDate(strip(item.pubDate));
 			let podcast = simplifyPodcast(strip(channel.title));
 			let duration = humanDurationFromSeconds(secondsFromDuration(strip(item.duration)));
 
@@ -158,14 +170,14 @@
 			e.className = "item";
 			e.innerHTML = t;
 			e.querySelector(".title").innerText = strip(item.title);
-			e.querySelector(".date").innerText = date;
+			e.querySelector(".date").innerText = `${formatHumanDate(date)}`;
 			e.querySelector(".duration").innerText = `${formatHumanDuration(duration)}`;
 			e.querySelector(".subtitle").innerText = strip(item.subtitle || item.description);
 			e.querySelector(".image").src = strip(item.image || channel.image);
 
 			let a = e.querySelector(".audio");
 			a.href = strip(item.enclosure.url);
-			a.download = `${podcast} - ${date} - ${item.title}`;
+			a.download = `${podcast} - ${dateYYYMMDD} - ${item.title}`;
 
 			return e;
 		}
@@ -374,7 +386,7 @@
 			color: var(--ink);
 			--ink: whitesmoke;
 			--ink-2: hsl(0, 0%, 91%);
-			--ink-3: hsl(0, 0%, 86%);
+			--ink-3: hsl(0, 0%, 80%);
 		}
 
 		.audio {
