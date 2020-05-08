@@ -78,17 +78,26 @@
 				minutes = 0;
 			}
 
+			// Another place where we round down
+			if (hours >= 1) {
+				if (remainingMinutes < 5) {
+					minutes = 0;
+				}
+			}
+
 			return { hours, minutes };
 		}
 
 		function formatHumanTime(hm) {
+			let h = (hm.hours === 1) ? `hour` : `hours`;
+			let m = (hm.minutes === 1) ? `min` : `mins`;
 			if (hm.hours) {
 				if (hm.minutes) {
-					return `${hm.hours} hour ${hm.minutes} min`;
+					return `${hm.hours} ${h} ${hm.minutes} ${m}`;
 				}
-				return `${hm.hours} hour`;
+				return `${hm.hours} ${h}`;
 			}
-			return `${hm.minutes} min`;
+			return `${hm.minutes} ${m}`;
 		}
 
 		function strip(html) {
