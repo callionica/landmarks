@@ -41,7 +41,7 @@
 			return 0;
 		}
 
-		function humanTimeFromSeconds(seconds) {
+		function humanDurationFromSeconds(seconds) {
 			let totalMinutes = seconds/60;			
 			let hours = Math.floor(totalMinutes/60);
 			let remainingMinutes = totalMinutes - (hours * 60);
@@ -88,7 +88,7 @@
 			return { hours, minutes };
 		}
 
-		function formatHumanTime(hm) {
+		function formatHumanDuration(hm) {
 			let h = (hm.hours === 1) ? `hour` : `hours`;
 			let m = (hm.minutes === 1) ? `min` : `mins`;
 			if (hm.hours) {
@@ -152,14 +152,14 @@
 
 			let date = simplifyDate(strip(item.pubDate));
 			let podcast = simplifyPodcast(strip(channel.title));
-			let duration = humanTimeFromSeconds(secondsFromDuration(strip(item.duration)));
+			let duration = humanDurationFromSeconds(secondsFromDuration(strip(item.duration)));
 
 			let e = document.createElement("div");
 			e.className = "item";
 			e.innerHTML = t;
 			e.querySelector(".title").innerText = strip(item.title);
 			e.querySelector(".date").innerText = date;
-			e.querySelector(".duration").innerText = `${formatHumanTime(duration)}`;
+			e.querySelector(".duration").innerText = `${formatHumanDuration(duration)}`;
 			e.querySelector(".subtitle").innerText = strip(item.subtitle || item.description);
 			e.querySelector(".image").src = strip(item.image || channel.image);
 
