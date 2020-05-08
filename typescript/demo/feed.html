@@ -11,6 +11,86 @@
 
 		const convertIt = feedToJSON;
 
+		function secondsFromDuration(time) {
+			// iTunes duration formats
+			const hms = /^(?<h>\d{1,2}):(?<m>\d{1,2}):(?<s>\d{1,2})$/ig;
+			const ms = /^(?<m>\d{1,2}):(?<s>\d{1,2})$/ig;
+			const s = /^(?<s>\d+)$/ig;
+			const formats = [hms, ms, s];
+			for (let format of formats) {
+				let match = format.exec(time);
+				if (match !== undefined) {
+					let o = match.groups;
+					let result = 0;
+					if (o.h) {
+						let h = parseInt(o.h, 10);
+						result += h * 60 * 60;
+					}
+					if (o.m) {
+						let m = parseInt(o.m, 10);
+						result += m * 60;
+					}
+					if (o.s) {
+						let s = parseInt(o.s, 10);
+						result += s;
+					}
+
+					return result;
+				}
+			}
+			return 0;
+		}
+
+		function humanTimeFromSeconds(seconds) {
+			let totalMinutes = seconds/60;			
+			let hours = Math.floor(totalMinutes/60);
+			let remainingMinutes = totalMinutes - (hours * 60);
+
+			// These bounds do not always round up
+			let bounds = [
+				[56.5, 60],
+				[52.5, 60], // 55 replaced by 60
+				[46.0, 50],
+				[42.0, 45],
+				[35.0, 40],
+				[31.0, 35],
+				[26.5, 30],
+				[23.0, 30], // 25 replaced by 30
+				[17.0, 20],
+				[12.0, 15],
+				[ 6.0, 10],
+				[ 3.5,  5],
+				[ 2.5,  3],
+				[ 1.1,  2],
+				[ 0.0,  1],
+			];
+
+			let minutes = 0;
+			for (let bound of bounds) {
+				if (remainingMinutes > bound[0]) {
+					minutes = bound[1];
+					break;
+				}
+			}
+
+			if (minutes === 60) {
+				hours += 1;
+				minutes = 0;
+			}
+
+			return { hours, minutes };
+		}
+
+		function formatHumanTime(hm) {
+			if (hm.hours) {
+				if (hm.minutes) {
+					return `${hm.hours} hour ${hm.minutes} min`;
+				}
+				return `${hm.hours} hour`;
+			}
+			return `${hm.minutes} min`;
+		}
+
 		function strip(html) {
 			let doc = new DOMParser().parseFromString(html, 'text/html');
 			return doc.body.textContent || "";
@@ -63,13 +143,14 @@
 
 			let date = simplifyDate(strip(item.pubDate));
 			let podcast = simplifyPodcast(strip(channel.title));
+			let duration = humanTimeFromSeconds(secondsFromDuration(strip(item.duration)));
 
 			let e = document.createElement("div");
 			e.className = "item";
 			e.innerHTML = t;
 			e.querySelector(".title").innerText = strip(item.title);
 			e.querySelector(".date").innerText = date;
-			e.querySelector(".duration").innerText = strip(item.duration);
+			e.querySelector(".duration").innerText = `${formatHumanTime(duration)}`;
 			e.querySelector(".subtitle").innerText = strip(item.subtitle || item.description);
 			e.querySelector(".image").src = strip(item.image || channel.image);
 
@@ -193,11 +274,21 @@
 		}
 
 		body {
+			--paper: rgb(249, 248, 245);
+			--ink: hsl(214, 97%, 23%);
+			--ink-2: hsl(214, 90%, 22%);
+			--ink-3: silver;
+
+			--blue: rgb(108, 115, 222);
+			--brown: rgb(118, 108,  29);
+
 			margin-left: 2vw;
 			margin-right: 2vw;
 			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 			font-size: 2vw;
 			line-height: 1.2;
+			background-color: var(--paper);
+			color: var(--ink);
 		}
 
 		textarea {
@@ -222,6 +313,7 @@
 		}
 
 		h1 {
+			color: inherit;
 			margin-bottom: 2vw;
 		}
 
@@ -248,13 +340,14 @@
 		}
 
 		.details {
-			color: silver;
+			color: var(--ink-3);
 			padding-top: calc(1 * var(--adjustment, 0)); /* Visual adjust to counter .content's adjustment */
 		}
 
 		.subtitle {
 			height: 10vw;
 			text-overflow: ellipsis;
+			color: var(--ink-2);
 		}
 
 		.item {
@@ -263,11 +356,11 @@
 		}
 
 		.item:hover {
-			background-color: lightblue;
-		}
-
-		.item:hover .details {
-			color: whitesmoke;
+			background-color: var(--brown);
+			color: var(--ink);
+			--ink: whitesmoke;
+			--ink-2: hsl(0, 0%, 91%);
+			--ink-3: hsl(0, 0%, 86%);
 		}
 
 		.audio {
