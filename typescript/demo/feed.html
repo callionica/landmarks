@@ -178,19 +178,19 @@
 			let dates = items.slice(0, 20).map(item => new Date(item.pubDate));
 			let sch = schedule(dates);
 
-			let durations = items.slice(0, 20).map(item => secondsFromDuration(strip(item.duration)));
+			let durations = items.slice(0, 20).map(item => secondsFromDuration(item.duration));
 			let averageDuration = durations.reduce((a,b) => (a+b)) / durations.length;
 			let humanDuration = humanDurationFromSeconds(averageDuration);
 
 			let e = document.createElement("div");
 			e.className = "channel";
 			e.innerHTML = t;
-			e.querySelector(".title").innerText = strip(channel.title);
-			e.querySelector(".subtitle").innerText = strip(channel.subtitle || channel.description);
+			e.querySelector(".title").innerText = channel.title;
+			e.querySelector(".subtitle").innerText = channel.subtitle || channel.description;
 			e.querySelector(".episodes").innerText = `${items.length} eps`;
 			e.querySelector(".schedule").innerText = sch;
 			e.querySelector(".duration").innerText = formatHumanDuration(humanDuration);
-			e.querySelector(".image").src = strip(channel.image);
+			e.querySelector(".image").src = channel.image;
 
 			return e;
 		}
@@ -209,23 +209,23 @@
 </a>
 `;
 
-			let date = new Date(strip(item.pubDate));
-			let dateYYYMMDD = simplifyDate(strip(item.pubDate));
-			let podcast = simplifyPodcast(strip(channel.title));
-			let duration = humanDurationFromSeconds(secondsFromDuration(strip(item.duration)));
+			let date = new Date(item.pubDate);
+			let dateYYYMMDD = simplifyDate(item.pubDate);
+			let podcast = simplifyPodcast(channel.title);
+			let duration = humanDurationFromSeconds(secondsFromDuration(item.duration));
 
 			let e = document.createElement("div");
 			e.className = "item";
 			e.innerHTML = t;
-			let title = strip(item.title);
+			let title = item.title;
 			e.querySelector(".title").innerText = title;
 			e.querySelector(".date").innerText = `${formatHumanDate(date)}`;
 			e.querySelector(".duration").innerText = `${formatHumanDuration(duration)}`;
-			e.querySelector(".subtitle").innerText = strip(item.subtitle || item.description);
-			e.querySelector(".image").src = strip(item.image || channel.image);
+			e.querySelector(".subtitle").innerText = item.subtitle || item.description;
+			e.querySelector(".image").src = item.image || channel.image;
 
 			let a = e.querySelector(".audio");
-			a.href = strip(item.enclosure.url);
+			a.href = item.enclosure.url;
 			a.download = `${podcast} - ${dateYYYMMDD} ${title}`;
 
 			return e;

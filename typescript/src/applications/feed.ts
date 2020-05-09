@@ -8,7 +8,7 @@
 import { LandmarksHandler, BaseHandler } from "../landmarks-handler.js"
 import { LandmarksRange, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksEndTag, LandmarksStartTag, LandmarksEndTagPrefix, TagID, EndTagState } from "../landmarks-parser-types.js";
 import { LandmarksParser } from "../landmarks-parser.js";
-import { xml } from "../landmarks-policy-ml.js";
+import { xml, html5 } from "../landmarks-policy-ml.js";
 import { encodeEntities } from "../landmarks-entities.js";
 
 function first(text: string, count: number = 1) {
@@ -87,6 +87,94 @@ class LandmarksString {
         this.text += "</" + tag + ">";
         // If there was trailingWhitespace it's now after the tag
     }
+}
+
+class TagRemover extends BaseHandler {
+    text: LandmarksString;
+
+    private elements: Element[] = [];
+
+    constructor() {
+        super();
+        this.text = new LandmarksString("");
+    }
+
+    cleanupTag() {
+        const e = this.current()!;
+        if (["p","br","hr"].includes(e.localName)) {
+            this.text.appendBreak();
+        }
+
+        this.elements.pop();
+    }
+
+    get path(): string {
+        const separator = " > ";
+        return separator + this.elements.map(e => e.localName).join(separator);
+    }
+
+    current(localName: string | undefined = undefined): Element | undefined {
+        if (!localName) {
+            return this.elements[this.elements.length - 1];
+        }
+
+        for (let index = this.elements.length - 1; index >= 0; --index) {
+            const e = this.elements[index];
+            if (e.localName === localName) {
+                return e;
+            }
+        }
+
+        return undefined;
+    }
+
+    CData(document: string, range: LandmarksRange) {
+    }
+
+    Text(document: string, range: LandmarksRange) {
+        this.text.append(range.getDecodedText(document));
+    }
+
+    StartTagPrefix(document: string, tag: LandmarksStartTagPrefix) {
+        const qn = tag.getQualifiedName(document);
+        let element: Element = { ...qn };
+        this.elements.push(element);
+    }
+
+    StartTagAttribute(document: string, attribute: LandmarksAttribute) {
+        const e = this.current()!;
+        const qn = attribute.getQualifiedName(document);
+    }
+
+    StartTag(document: string, tag: LandmarksStartTag) {
+        const e = this.current()!;
+
+        if (tag.isSelfClosing) {
+            // There won't be an EndTag to remove the item from the stack
+            this.cleanupTag();
+        }
+    }
+
+    EndTag(document: string, tag: LandmarksEndTag) {
+        if (tag.state === EndTagState.unmatched) {
+            return;
+        }
+
+        // A matching end tag means we have a current element
+        const e = this.current()!;
+
+        this.cleanupTag();
+    }
+
+    EndOfInput(document: string, open_elements: TagID[]) {
+    }
+}
+
+function stripTags(text: string) {
+    const parser = LandmarksParser(html5);
+    const handler = new TagRemover();
+    parser.parse(text, handler);
+    return handler.text.trimmed;
 }
 
 type Item = any;
@@ -175,7 +263,7 @@ class Feed extends BaseHandler {
             let props = ["title", "description", "subtitle", "summary", "pubDate", "duration", "link", "guid"];
             for (let prop of props) {
                 if (this.current(prop)) {
-                    item[prop] = range.getDecodedText(document);
+                    item[prop] = stripTags(range.getDecodedText(document));
                 }
             }
         } else {
@@ -184,7 +272,7 @@ class Feed extends BaseHandler {
                 let props = ["title", "description", "subtitle", "summary", "pubDate"];
                 for (let prop of props) {
                     if (this.current(prop)) {
-                        channel.data[prop] = range.getDecodedText(document);
+                        channel.data[prop] = stripTags(range.getDecodedText(document));
                     }
                 }
             }
