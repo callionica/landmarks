@@ -116,7 +116,7 @@
 
 		function strip(html) {
 			let doc = new DOMParser().parseFromString(html, 'text/html');
-			return doc.body.textContent || "";
+			return doc.body.textContent.trim() || "";
 		}
 
 		function simplifyDate(pubDate) {
@@ -217,7 +217,8 @@
 			let e = document.createElement("div");
 			e.className = "item";
 			e.innerHTML = t;
-			e.querySelector(".title").innerText = strip(item.title);
+			let title = strip(item.title);
+			e.querySelector(".title").innerText = title;
 			e.querySelector(".date").innerText = `${formatHumanDate(date)}`;
 			e.querySelector(".duration").innerText = `${formatHumanDuration(duration)}`;
 			e.querySelector(".subtitle").innerText = strip(item.subtitle || item.description);
@@ -225,7 +226,7 @@
 
 			let a = e.querySelector(".audio");
 			a.href = strip(item.enclosure.url);
-			a.download = `${podcast} - ${dateYYYMMDD} ${item.title}`;
+			a.download = `${podcast} - ${dateYYYMMDD} ${title}`;
 
 			return e;
 		}
