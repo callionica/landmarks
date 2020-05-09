@@ -320,7 +320,8 @@
 				let url = feeds.value;
 				
 				let cached = cache[url];
-				if (cached !== undefined) {
+				// let cached = localStorage.getItem(url);
+				if (cached) {
 					document.getElementById("input").value = cached;
 					convert();
 					return;
@@ -328,6 +329,7 @@
 
 				fetch(url).then(response => response.text()).then(data => {
 					cache[url] = data;
+					// localStorage.setItem(url, data);
 					document.getElementById("input").value = data;
 					convert();
 				});
@@ -485,8 +487,9 @@
 </head>
 
 <body>
-	<h1>LANDMARKS - PODCAST VIEWER</h1>
-	<!--<h2>Convert feed</h2>-->
+	<h1>LANDMARKS PODCAST VIEWER</h1>
+	<p style="margin-bottom: var(--margin);">Pick a podcast,<!-- enter a feed,--> or drop a podcast feed file on the page.</p>
+
 	<select id="feeds">
 		<!--<option value="https://atp.fm/episodes?format=rss">ATP - Accidental Tech Podcast</option>-->
 		<option value="http://scriptnotes.libsyn.com/rss">Scriptnotes</option>
@@ -499,7 +502,6 @@
 		<option value="http://feeds.megaphone.fm/BKS3925808083">Back Story</option>
 		<option value="https://feeds.megaphone.fm/mogul">Mogul</option>
 	</select>
-	<p>Pick a podcast,<!-- enter a feed,--> or drop a podcast feed file on the page.</p>
 
 	<textarea id="input" title="Feed" style="width:100%; height: 120px;">
 	<?xml version="1.0" encoding="UTF-8"?>
