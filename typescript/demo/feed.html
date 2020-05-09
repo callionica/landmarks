@@ -169,14 +169,18 @@
 			<div>
 			<div class="content">
 			<p class="subtitle"></p>
-			<p class="details"><span class="episodes"></span> • <span class="schedule"></span></p>
+			<p class="details"><span class="episodes"></span> • <span class="schedule"></span> • <span class="duration"></span></p>
 			</div>
 			<img class="image">
 			</div>
 			`;
 
-			let dates = items.slice(0, 20).map(i => new Date(i.pubDate));
+			let dates = items.slice(0, 20).map(item => new Date(item.pubDate));
 			let sch = schedule(dates);
+
+			let durations = items.slice(0, 20).map(item => secondsFromDuration(strip(item.duration)));
+			let averageDuration = durations.reduce((a,b) => (a+b)) / durations.length;
+			let humanDuration = humanDurationFromSeconds(averageDuration);
 
 			let e = document.createElement("div");
 			e.className = "channel";
@@ -185,6 +189,7 @@
 			e.querySelector(".subtitle").innerText = strip(channel.subtitle || channel.description);
 			e.querySelector(".episodes").innerText = `${items.length} eps`;
 			e.querySelector(".schedule").innerText = sch;
+			e.querySelector(".duration").innerText = formatHumanDuration(humanDuration);
 			e.querySelector(".image").src = strip(channel.image);
 
 			return e;
