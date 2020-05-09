@@ -225,7 +225,7 @@
 
 			let a = e.querySelector(".audio");
 			a.href = strip(item.enclosure.url);
-			a.download = `${podcast} - ${dateYYYMMDD} - ${item.title}`;
+			a.download = `${podcast} - ${dateYYYMMDD} ${item.title}`;
 
 			return e;
 		}
