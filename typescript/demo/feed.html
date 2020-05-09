@@ -9,7 +9,8 @@
 	<script type="module">
 		import { feedToJSON } from "../js/applications/feed.js";
 
-		const convertIt = feedToJSON;
+		const limit = undefined;
+		const convertIt = (t) => feedToJSON(t, limit);
 
 		function secondsFromDuration(time) {
 			// iTunes duration formats
@@ -428,11 +429,11 @@
 
 		.details {
 			color: var(--ink-3);
-			padding-top: calc(2 * var(--adjustment, 0)); /* Visual adjust to counter .content's adjustment */
+			padding-top: calc(1 * var(--adjustment, 0)); /* Visual adjust to counter .content's adjustment */
 		}
 
 		.subtitle {
-			height: var(--five-lines);
+			height: calc(var(--five-lines) + var(--adjustment));
 			overflow: hidden;
 			text-overflow: ellipsis;
 			color: var(--ink-2);
@@ -460,6 +461,14 @@
 			text-decoration: none;
 			color: inherit;
 		}
+
+		#output {
+			display: none;
+		}
+
+		#input {
+			display: none;
+		}
 	</style>
 </head>
 
@@ -478,7 +487,7 @@
 		<option value="http://feeds.megaphone.fm/BKS3925808083">Back Story</option>
 		<option value="https://feeds.megaphone.fm/mogul">Mogul</option>
 	</select>
-	<p>Pick a feed, enter a feed, or drop a feed file here:</p>
+	<p>Pick a feed,<!-- enter a feed,--> or drop a feed file here:</p>
 
 	<textarea id="input" title="Feed" style="width:100%; height: 120px;">
 	<?xml version="1.0" encoding="UTF-8"?>
