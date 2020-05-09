@@ -9,6 +9,8 @@
 	<script type="module">
 		import { feedToJSON } from "../js/applications/feed.js";
 
+		const cache = {};
+
 		const limit = undefined;
 		const convertIt = (t) => feedToJSON(t, limit);
 
@@ -243,7 +245,7 @@
 		}
 
 		function init() {
-			function convert() {
+			function convert(cacheByChannel) {
 
 				// Get the input data
 				const input = document.getElementById("input").value;
@@ -275,6 +277,17 @@
 				for (let item of o.items) {
 					fo.append(itemToHTML(o.channel, item));
 				}
+
+				if (cacheByChannel) {
+					let title = o.channel.title;
+					
+					cache[title] = input;
+
+					let option = document.createElement("option");
+					option.value = title;
+					option.innerText = title;
+					document.getElementById("feeds").append(option);
+				}
 			}
 
 			function initFileDrop() {
@@ -301,7 +314,8 @@
 
 							let text = event.target.result;
 							document.getElementById("input").value = text;
-							convert();
+							let cacheByChannel = true;
+							convert(cacheByChannel);
 						};
 						reader.readAsText(file);
 					}
@@ -315,7 +329,7 @@
 			initFileDrop();
 
 			let feeds = document.getElementById("feeds");
-			let cache = {};
+			
 			feeds.onchange = function () {
 				let url = feeds.value;
 				
@@ -353,6 +367,7 @@
 			border-image-width: 0;
 			font-size: inherit;
 			margin-bottom: var(--margin);
+			width: 100%;
 		}
 
 		body {
@@ -443,11 +458,11 @@
 
 		.details {
 			color: var(--ink-3);
-			padding-top: calc(1 * var(--adjustment, 0)); /* Visual adjust to counter .content's adjustment */
+			padding-top: calc(2 * var(--adjustment, 0)); /* Visual adjust to counter .content's adjustment */
 		}
 
 		.subtitle {
-			height: calc(var(--five-lines) + var(--adjustment));
+			height: calc(var(--five-lines));
 			overflow: hidden;
 			text-overflow: ellipsis;
 			color: var(--ink-2);
