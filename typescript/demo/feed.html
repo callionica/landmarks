@@ -183,7 +183,7 @@
 			let date = new Date(item.date_published);
 			let dateYYYMMDD = simplifyDate(item.date_published);
 			let podcast = simplifyPodcast(channel.title);
-			let duration = humanDurationFromSeconds(item.duration_in_seconds);
+			let duration = humanDurationFromSeconds(item.attachments[0].duration_in_seconds);
 
 			let e = document.createElement("div");
 			e.className = "item";
