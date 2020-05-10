@@ -24,12 +24,11 @@ function last(text: string, count: number = 1) {
     return text.substring(text.length - count);
 }
 
-class LandmarksString {
+class LandmarksText {
     // text is normalized:
     // it won't start with whitespace
     // if it contains \n, it's deliberate; \n shouldn't be merged or ignored
     // space at the end can be merged or ignored
-    // &<> are encoded
     private text: string = "";
     private trailingWhitespace: string = "";
 
@@ -50,18 +49,11 @@ class LandmarksString {
         return this.text;
     }
 
-    // The result does not include any trailing whitespace and is decoded
-    get decoded() {
-        return decodeEntities(this.trimmed);
-    }
-
-    // Encodes the passed text and normalizes the whitespace
+    // Normalizes the whitespace
     append(text: string) {
         if (text.length <= 0) {
             return;
         }
-
-        text = encodeEntities(text);
 
         const normalizedText = text.replace(/\s+/g, " ");
 
@@ -88,17 +80,6 @@ class LandmarksString {
             this.trailingWhitespace = "\n";
         }
     }
-
-    appendOpenTag(tag: string) {
-        this.text += this.trailingWhitespace + "<" + tag + ">";
-        this.trailingWhitespace = "";
-    }
-
-    // appendCloseTag adds the close tag before any trailing whitespace
-    appendCloseTag(tag: string) {
-        this.text += "</" + tag + ">";
-        // If there was trailingWhitespace it's now after the tag
-    }
 }
 
 // Removes HTML tags/attributes while preserving text
@@ -106,13 +87,13 @@ class LandmarksString {
 // Does a small amount of tag->whitespace adjustment
 // e.g. p, br, hr all produce \n
 class TagRemover extends BaseHandler {
-    text: LandmarksString;
+    text: LandmarksText;
 
     private elements: Element[] = [];
 
     constructor() {
         super();
-        this.text = new LandmarksString("");
+        this.text = new LandmarksText("");
     }
 
     closeTag() {
@@ -191,7 +172,7 @@ function stripTags(text: string, policy: LandmarksPolicy = html5) {
     const parser = LandmarksParser(policy);
     const handler = new TagRemover();
     parser.parse(text, handler);
-    return handler.text.decoded;
+    return handler.text.trimmed;
 }
 
 type Item = any;

@@ -42,7 +42,7 @@ function last(text: string, count: number = 1) {
     return text.substring(text.length - count);
 }
 
-class LandmarksString {
+class LandmarksMarkup {
     // text is normalized:
     // it won't start with whitespace
     // if it contains \n, it's deliberate; \n shouldn't be merged or ignored
@@ -132,10 +132,10 @@ function nameColor(color: string) : string {
     return color;
 }
 
-type E = { localName: string, content?: LandmarksString };
+type E = { localName: string, content?: LandmarksMarkup };
 type A = { id?: string, style?: string, color?: string, begin?: string, end?: string };
 type Element = E & A;
-type Subtitle = Element & { content: LandmarksString };
+type Subtitle = Element & { content: LandmarksMarkup };
 
 function webvttTime(time: string, framesPerSecond: number = 25) {
     const hms = /^((?<h>\d{1,2}):)?(?<m>\d{1,2}):(?<s>\d{1,2})([.](?<ms>\d{1,3}))?$/ig;
@@ -221,7 +221,7 @@ class TTML extends BaseHandler {
                 break;
             case "p":
                 if (this.current("body")) {
-                    element.content = new LandmarksString("");
+                    element.content = new LandmarksMarkup("");
                     this.subtitles.push(element as Subtitle);
                 }
                 break;
