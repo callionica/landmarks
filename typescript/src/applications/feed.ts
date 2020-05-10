@@ -86,7 +86,7 @@ class LandmarksText {
 // Assumes whitespace should be normalized
 // Does a small amount of tag->whitespace adjustment
 // e.g. p, br, hr all produce \n
-class TagRemover extends BaseHandler {
+class MarkupRemover extends BaseHandler {
     text: LandmarksText;
 
     private elements: Element[] = [];
@@ -168,9 +168,10 @@ class TagRemover extends BaseHandler {
     }
 }
 
-function stripTags(text: string, policy: LandmarksPolicy = html5) {
+// Removes markup, if any, and returns a trimmed version of the text
+function removeMarkup(text: string, policy: LandmarksPolicy = html5) {
     const parser = LandmarksParser(policy);
-    const handler = new TagRemover();
+    const handler = new MarkupRemover();
     parser.parse(text, handler);
     return handler.text.trimmed;
 }
@@ -261,7 +262,7 @@ class Feed extends BaseHandler {
             let props = ["title", "description", "subtitle", "summary", "pubDate", "duration", "link", "guid"];
             for (let prop of props) {
                 if (this.current(prop)) {
-                    item[prop] = stripTags(range.getDecodedText(document));
+                    item[prop] = removeMarkup(range.getDecodedText(document));
                 }
             }
         } else {
@@ -270,7 +271,7 @@ class Feed extends BaseHandler {
                 let props = ["title", "description", "subtitle", "summary", "pubDate"];
                 for (let prop of props) {
                     if (this.current(prop)) {
-                        channel.data[prop] = stripTags(range.getDecodedText(document));
+                        channel.data[prop] = removeMarkup(range.getDecodedText(document));
                     }
                 }
             }
