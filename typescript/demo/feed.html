@@ -201,6 +201,12 @@
 				a.download = `${podcast} - ${dateYYYMMDD} ${title}`;
 			}
 
+			if (item.external_url) {
+				// TODO
+				let a = e.querySelector(".audio");
+				a.href = item.external_url;
+			}
+
 			return e;
 		}
 

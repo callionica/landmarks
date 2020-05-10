@@ -259,7 +259,7 @@ class Feed extends BaseHandler {
         let item = this.item;
 
         if (item !== undefined) {
-            let props = ["title", "description", "subtitle", "summary", "pubDate", "link", "duration", "guid"];
+            let props = ["author", "title", "description", "subtitle", "summary", "pubDate", "link", "duration", "guid"];
             for (let prop of props) {
                 if (this.current(prop)) {
                     item[prop] = removeMarkup(range.getDecodedText(document));
@@ -268,7 +268,7 @@ class Feed extends BaseHandler {
         } else {
             let channel = this.channel;
             if (channel !== undefined) {
-                let props = ["title", "description", "subtitle", "summary", "pubDate", "link",];
+                let props = ["author", "title", "description", "subtitle", "summary", "pubDate", "link",];
                 for (let prop of props) {
                     if (this.current(prop)) {
                         channel.data[prop] = removeMarkup(range.getDecodedText(document));
@@ -376,15 +376,14 @@ export function feedToJSON(text: string, maximumItems: number = -1) {
             let feed = JSON.parse(text);
             if (feed.version && feed.version.startsWith("https://jsonfeed.org/version/")) {
                 feed.items = feed.items.map((item: any) => {
-                    let feedItem = item; // TODO
-                    if (feedItem.content_text === undefined && feedItem.content_html !== undefined) {
-                        feedItem.content_text = removeMarkup(feedItem.content_html);
+                    if (item.content_text === undefined && item.content_html !== undefined) {
+                        item.content_text = removeMarkup(item.content_html);
                     }
 
-                    if (feedItem.date_published === undefined && feedItem.date_modified !== undefined) {
-                        feedItem.date_published = feedItem.date_modified;
+                    if (item.date_published === undefined && item.date_modified !== undefined) {
+                        item.date_published = item.date_modified;
                     }
-                    return feedItem;
+                    return item;
                 });
                 return JSON.stringify(feed, null, 2);
             }
@@ -425,6 +424,7 @@ export function feedToJSON(text: string, maximumItems: number = -1) {
     // Create jsonfeed from the extracted data
     let jsonfeed = {
         version : "https://jsonfeed.org/version/1",
+        author: { name: channel.author },
         title: channel.title,
         description: channel.subtitle || channel.description,
         home_page_url: channel.link,
@@ -456,6 +456,7 @@ export function feedToJSON(text: string, maximumItems: number = -1) {
 
             let jsonitem = {
                 id: item.guid,
+                author: { name: item.author },
                 title: item.title,
                 summary: item.subtitle,
                 url: item.link, // TODO - distinguish url and external_url
