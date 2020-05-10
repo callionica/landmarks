@@ -339,7 +339,7 @@ class Feed extends BaseHandler {
     }
 }
 
-function secondsFromDuration(time: string): number {
+function secondsFromDuration(time: string): number | undefined {
     // iTunes duration formats
     const hms = /^(?<h>\d{1,2}):(?<m>\d{1,2}):(?<s>\d{1,2})$/ig;
     const ms = /^(?<m>\d{1,2}):(?<s>\d{1,2})$/ig;
@@ -366,7 +366,15 @@ function secondsFromDuration(time: string): number {
             return result;
         }
     }
-    return 0;
+    return undefined;
+}
+
+interface JSONFeedAttachment {
+    url: string;
+    mime_type: string;
+    title?: string;
+    size_in_bytes?: number;
+    duration_in_seconds?: number;
 }
 
 export function feedToJSON(text: string, maximumItems: number = -1) {
@@ -458,11 +466,11 @@ export function feedToJSON(text: string, maximumItems: number = -1) {
             } catch (e) {
             }
 
-            let attachments = undefined;
+            let attachments : JSONFeedAttachment[] | undefined = undefined;
             if (item.enclosure) {
                 let title = `${simpleChannelTitle} - ${yyyy_mm_dd} ${item.title}`;
 
-                let duration_in_seconds = undefined;
+                let duration_in_seconds: number | undefined = undefined;
                 if (item.duration !== undefined) {
                     duration_in_seconds = secondsFromDuration(item.duration);
                 }
