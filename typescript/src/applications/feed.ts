@@ -1,7 +1,11 @@
 // ALL RIGHTS RESERVED
 
-// A simple RSS feed parser that converts RSS to JSON
+// A simple RSS podcast feed parser that converts RSS to JSON
 // This example demonstrates early exit
+//
+// The parser pulls data from RSS and iTunes tags to get data about podcasts.
+// It handles both HTML and CDATA properties and removes the HTML from all of them
+// to produce plain text.
 //
 // "feedToJSON(string) : string" converts an RSS feed string to JSON
 
@@ -9,7 +13,8 @@ import { LandmarksHandler, BaseHandler } from "../landmarks-handler.js"
 import { LandmarksRange, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksEndTag, LandmarksStartTag, LandmarksEndTagPrefix, TagID, EndTagState } from "../landmarks-parser-types.js";
 import { LandmarksParser } from "../landmarks-parser.js";
 import { xml, html5 } from "../landmarks-policy-ml.js";
-import { encodeEntities } from "../landmarks-entities.js";
+import { encodeEntities, decodeEntities } from "../landmarks-entities.js";
+import { LandmarksPolicy } from "../landmarks-policy.js";
 
 function first(text: string, count: number = 1) {
     return text.substring(0, count);
@@ -45,6 +50,12 @@ class LandmarksString {
         return this.text;
     }
 
+    // The result does not include any trailing whitespace and is decoded
+    get decoded() {
+        return decodeEntities(this.trimmed);
+    }
+
+    // Encodes the passed text and normalizes the whitespace
     append(text: string) {
         if (text.length <= 0) {
             return;
@@ -69,6 +80,7 @@ class LandmarksString {
         }
     }
 
+    // Appends a line break \n
     appendBreak() {
         if (last(this.trailingWhitespace) === "\n") {
             this.trailingWhitespace += "\n";
@@ -89,6 +101,10 @@ class LandmarksString {
     }
 }
 
+// Removes HTML tags/attributes while preserving text
+// Assumes whitespace should be normalized
+// Does a small amount of tag->whitespace adjustment
+// e.g. p, br, hr all produce \n
 class TagRemover extends BaseHandler {
     text: LandmarksString;
 
@@ -99,9 +115,9 @@ class TagRemover extends BaseHandler {
         this.text = new LandmarksString("");
     }
 
-    cleanupTag() {
+    closeTag() {
         const e = this.current()!;
-        if (["p","br","hr"].includes(e.localName)) {
+        if (["p","br","hr", "tr"].includes(e.localName)) {
             this.text.appendBreak();
         }
 
@@ -151,30 +167,31 @@ class TagRemover extends BaseHandler {
 
         if (tag.isSelfClosing) {
             // There won't be an EndTag to remove the item from the stack
-            this.cleanupTag();
+            this.closeTag();
         }
     }
 
     EndTag(document: string, tag: LandmarksEndTag) {
         if (tag.state === EndTagState.unmatched) {
+            // There wasn't a StartTagPrefix to push the item on the stack
             return;
         }
 
         // A matching end tag means we have a current element
         const e = this.current()!;
 
-        this.cleanupTag();
+        this.closeTag();
     }
 
     EndOfInput(document: string, open_elements: TagID[]) {
     }
 }
 
-function stripTags(text: string) {
-    const parser = LandmarksParser(html5);
+function stripTags(text: string, policy: LandmarksPolicy = html5) {
+    const parser = LandmarksParser(policy);
     const handler = new TagRemover();
     parser.parse(text, handler);
-    return handler.text.trimmed;
+    return handler.text.decoded;
 }
 
 type Item = any;
@@ -252,7 +269,7 @@ class Feed extends BaseHandler {
     }
 
     CData(document: string, range: LandmarksRange) {
-        // We can do this because getDecodedText works nicely for CData ranges
+        // We can do this because LandmarksRange.getDecodedText works nicely for CData ranges
         this.Text(document, range);
     }
 
