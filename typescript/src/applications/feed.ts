@@ -370,9 +370,26 @@ function secondsFromDuration(time: string): number {
 }
 
 export function feedToJSON(text: string, maximumItems: number = -1) {
-    // If we get passed a jsonfeed, just return it
-    const v = "https://jsonfeed.org/version/";
-    if (text.slice(0, 64).includes(v)) {
+    // If we get passed json, do some updates
+    if (text.slice(0, 16).includes("{")) {
+        try {
+            let feed = JSON.parse(text);
+            if (feed.version && feed.version.startsWith("https://jsonfeed.org/version/")) {
+                feed.items = feed.items.map((item: any) => {
+                    let feedItem = item; // TODO
+                    if (feedItem.content_text === undefined && feedItem.content_html !== undefined) {
+                        feedItem.content_text = removeMarkup(feedItem.content_html);
+                    }
+
+                    if (feedItem.date_published === undefined && feedItem.date_modified !== undefined) {
+                        feedItem.date_published = feedItem.date_modified;
+                    }
+                    return feedItem;
+                });
+                return JSON.stringify(feed, null, 2);
+            }
+        } catch(e) {
+        }
         return text;
     }
 

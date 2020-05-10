@@ -192,7 +192,7 @@
 			e.querySelector(".title").innerText = title;
 			e.querySelector(".date").innerText = `${formatHumanDate(date)}`;
 			e.querySelector(".duration").innerText = `${formatHumanDuration(duration)}`;
-			e.querySelector(".subtitle").innerText = item.summary;
+			e.querySelector(".subtitle").innerText = item.summary || item.content_text;
 			e.querySelector(".image").src = item.image || channel.icon;
 
 			if (item.attachments) {
