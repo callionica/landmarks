@@ -259,7 +259,7 @@ class Feed extends BaseHandler {
         let item = this.item;
 
         if (item !== undefined) {
-            let props = ["title", "description", "subtitle", "summary", "pubDate", "duration", "link", "guid"];
+            let props = ["title", "description", "subtitle", "summary", "pubDate", "link", "duration", "guid"];
             for (let prop of props) {
                 if (this.current(prop)) {
                     item[prop] = removeMarkup(range.getDecodedText(document));
@@ -268,7 +268,7 @@ class Feed extends BaseHandler {
         } else {
             let channel = this.channel;
             if (channel !== undefined) {
-                let props = ["title", "description", "subtitle", "summary", "pubDate"];
+                let props = ["title", "description", "subtitle", "summary", "pubDate", "link",];
                 for (let prop of props) {
                     if (this.current(prop)) {
                         channel.data[prop] = removeMarkup(range.getDecodedText(document));
@@ -339,7 +339,43 @@ class Feed extends BaseHandler {
     }
 }
 
+function secondsFromDuration(time: string): number {
+    // iTunes duration formats
+    const hms = /^(?<h>\d{1,2}):(?<m>\d{1,2}):(?<s>\d{1,2})$/ig;
+    const ms = /^(?<m>\d{1,2}):(?<s>\d{1,2})$/ig;
+    const s = /^(?<s>\d+)$/ig;
+    const formats = [hms, ms, s];
+    for (let format of formats) {
+        let match = format.exec(time) as any; // TODO - as any
+        if (match) {
+            let o = match.groups;
+            let result = 0;
+            if (o.h) {
+                let h = parseInt(o.h, 10);
+                result += h * 60 * 60;
+            }
+            if (o.m) {
+                let m = parseInt(o.m, 10);
+                result += m * 60;
+            }
+            if (o.s) {
+                let s = parseInt(o.s, 10);
+                result += s;
+            }
+
+            return result;
+        }
+    }
+    return 0;
+}
+
 export function feedToJSON(text: string, maximumItems: number = -1) {
+    // If we get passed a jsonfeed, just return it
+    const v = "https://jsonfeed.org/version/";
+    if (text.slice(0, 64).includes(v)) {
+        return text;
+    }
+
     const feedHandler = {
         channel: {} as any,
         items: [] as any[],
@@ -353,8 +389,10 @@ export function feedToJSON(text: string, maximumItems: number = -1) {
             }
         }
     };
+
     const parser = LandmarksParser(xml);
     const landmarksHandler = new Feed(feedHandler);
+
     try {
         parser.parse(text, landmarksHandler);
     } catch (e) {
@@ -364,5 +402,55 @@ export function feedToJSON(text: string, maximumItems: number = -1) {
             throw e;
         }
     }
-    return JSON.stringify({ channel: feedHandler.channel, items: feedHandler.items }, null, 2);
+
+    let { channel, items } = feedHandler;
+
+    // Create jsonfeed from the extracted data
+    let jsonfeed = {
+        version : "https://jsonfeed.org/version/1",
+        title: channel.title,
+        description: channel.subtitle || channel.description,
+        home_page_url: channel.link,
+        image: channel.image,
+        items: items.map(item => {
+
+            let date_published = undefined;
+            try {
+                date_published = new Date(item.pubDate).toISOString();
+            } catch (e) {
+            }
+
+            let attachments = undefined;
+            if (item.enclosure) {
+                let duration_in_seconds = undefined;
+                if (item.duration !== undefined) {
+                    duration_in_seconds = secondsFromDuration(item.duration);
+                }
+
+                attachments = [
+                    {
+                        url: item.enclosure.url,
+                        size_in_bytes: item.enclosure.length,
+                        mime_type: item.enclosure.type,
+                        duration_in_seconds,
+                    }
+                ];
+            }
+
+            let jsonitem = {
+                id: item.guid,
+                title: item.title,
+                summary: item.subtitle,
+                url: item.link, // TODO - distinguish url and external_url
+                image: item.image,
+                content_text: item.description, // We've removed any markup already
+                date_published,
+                attachments,
+            };
+            return jsonitem;
+        })
+    };
+
+    return JSON.stringify(jsonfeed, null, 2);
+    // return JSON.stringify({ channel: feedHandler.channel, items: feedHandler.items }, null, 2);
 }

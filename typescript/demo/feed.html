@@ -14,36 +14,6 @@
 		const limit = undefined;
 		const convertIt = (t) => feedToJSON(t, limit);
 
-		function secondsFromDuration(time) {
-			// iTunes duration formats
-			const hms = /^(?<h>\d{1,2}):(?<m>\d{1,2}):(?<s>\d{1,2})$/ig;
-			const ms = /^(?<m>\d{1,2}):(?<s>\d{1,2})$/ig;
-			const s = /^(?<s>\d+)$/ig;
-			const formats = [hms, ms, s];
-			for (let format of formats) {
-				let match = format.exec(time);
-				if (match) {
-					let o = match.groups;
-					let result = 0;
-					if (o.h) {
-						let h = parseInt(o.h, 10);
-						result += h * 60 * 60;
-					}
-					if (o.m) {
-						let m = parseInt(o.m, 10);
-						result += m * 60;
-					}
-					if (o.s) {
-						let s = parseInt(o.s, 10);
-						result += s;
-					}
-
-					return result;
-				}
-			}
-			return 0;
-		}
-
 		function humanDurationFromSeconds(seconds) {
 			let totalMinutes = seconds/60;			
 			let hours = Math.floor(totalMinutes/60);
@@ -164,7 +134,7 @@
 			return result;
 		}
 
-		function channelToHTML(channel, items) {
+		function channelToHTML(channel) {
 			let t = `<h1 class="title"></h1>
 			<div>
 			<div class="content">
@@ -175,10 +145,11 @@
 			</div>
 			`;
 
-			let dates = items.slice(0, 20).map(item => new Date(item.pubDate));
+			let items = channel.items;
+			let dates = items.slice(0, 20).map(item => new Date(item.date_published));
 			let sch = schedule(dates);
 
-			let durations = items.slice(0, 20).map(item => secondsFromDuration(item.duration));
+			let durations = items.slice(0, 20).map(item => item.attachments[0].duration_in_seconds);
 			let averageDuration = durations.reduce((a,b) => (a+b)) / durations.length;
 			let humanDuration = humanDurationFromSeconds(averageDuration);
 
@@ -186,7 +157,7 @@
 			e.className = "channel";
 			e.innerHTML = t;
 			e.querySelector(".title").innerText = channel.title;
-			e.querySelector(".subtitle").innerText = channel.subtitle || channel.description;
+			e.querySelector(".subtitle").innerText = channel.description;
 			e.querySelector(".episodes").innerText = `${items.length} eps`;
 			e.querySelector(".schedule").innerText = sch;
 			e.querySelector(".duration").innerText = formatHumanDuration(humanDuration);
@@ -209,10 +180,10 @@
 </a>
 `;
 
-			let date = new Date(item.pubDate);
-			let dateYYYMMDD = simplifyDate(item.pubDate);
+			let date = new Date(item.date_published);
+			let dateYYYMMDD = simplifyDate(item.date_published);
 			let podcast = simplifyPodcast(channel.title);
-			let duration = humanDurationFromSeconds(secondsFromDuration(item.duration));
+			let duration = humanDurationFromSeconds(item.duration_in_seconds);
 
 			let e = document.createElement("div");
 			e.className = "item";
@@ -221,11 +192,11 @@
 			e.querySelector(".title").innerText = title;
 			e.querySelector(".date").innerText = `${formatHumanDate(date)}`;
 			e.querySelector(".duration").innerText = `${formatHumanDuration(duration)}`;
-			e.querySelector(".subtitle").innerText = item.subtitle || item.description;
+			e.querySelector(".subtitle").innerText = item.summary;
 			e.querySelector(".image").src = item.image || channel.image;
 
 			let a = e.querySelector(".audio");
-			a.href = item.enclosure.url;
+			a.href = item.attachments[0].url;
 			a.download = `${podcast} - ${dateYYYMMDD} ${title}`;
 
 			return e;
@@ -278,14 +249,14 @@
 				let fo = document.getElementById("formatted-output");
 				fo.innerHTML = "";
 
-				fo.append(channelToHTML(o.channel, o.items));
+				fo.append(channelToHTML(o));
 
 				for (let item of o.items) {
-					fo.append(itemToHTML(o.channel, item));
+					fo.append(itemToHTML(o, item));
 				}
 
 				if (cacheByChannel) {
-					let title = o.channel.title;
+					let title = o.title;
 					
 					cache[title] = input;
 
