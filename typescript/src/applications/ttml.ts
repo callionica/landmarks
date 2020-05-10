@@ -100,6 +100,7 @@ class LandmarksMarkup {
         }
     }
 
+    // appendOpenTag adds the open tag after any trailing whitespace
     appendOpenTag(tag: string) {
         this.text += this.trailingWhitespace + "<" + tag + ">";
         this.trailingWhitespace = "";
