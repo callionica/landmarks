@@ -199,7 +199,7 @@
 			if (item.attachments) {
 				let a = e.querySelector(".audio");
 				a.href = item.attachments[0].url;
-				a.download = `${podcast} - ${dateYYYMMDD} ${title}`;
+				a.download = item.attachments[0].title;
 			}
 
 			if (item.external_url) {
@@ -506,6 +506,7 @@
 		<option value="https://feeds.megaphone.fm/lore">Lore</option>
 		<option value="http://feeds.megaphone.fm/BKS3925808083">Back Story</option>
 		<option value="https://feeds.megaphone.fm/mogul">Mogul</option>
+		<option value="https://podcasts.files.bbci.co.uk/p004t1hd.rss">Witness History</option>
 	</select>
 
 	<textarea id="input" title="Feed" style="width:100%; height: 120px;">

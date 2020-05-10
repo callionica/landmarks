@@ -370,11 +370,18 @@ function secondsFromDuration(time: string): number {
 }
 
 export function feedToJSON(text: string, maximumItems: number = -1) {
+    function simplifyTitle(title: string) {
+        return title.replace(/ podcast$/i, "");
+    }
+
     // If we get passed json, do some updates
     if (text.slice(0, 16).includes("{")) {
         try {
             let feed = JSON.parse(text);
             if (feed.version && feed.version.startsWith("https://jsonfeed.org/version/")) {
+                
+                let simpleChannelTitle = simplifyTitle(feed.title);
+
                 feed.items = feed.items.map((item: any) => {
                     if (item.content_text === undefined && item.content_html !== undefined) {
                         item.content_text = removeMarkup(item.content_html);
@@ -383,6 +390,16 @@ export function feedToJSON(text: string, maximumItems: number = -1) {
                     if (item.date_published === undefined && item.date_modified !== undefined) {
                         item.date_published = item.date_modified;
                     }
+
+                    if (item.date_published !== undefined && (item.attachments) && (item.attachments.length === 1)) {
+                        let attachment = item.attachments[0];
+                        if (attachment.title === undefined) {
+                            let yyyy_mm_dd = item.date_published.substring(0, "yyyy-mm-dd".length);
+                            let title = `${simpleChannelTitle} - ${yyyy_mm_dd} ${item.title}`;
+                            attachment.title = title;
+                        }
+                    }
+
                     return item;
                 });
                 return JSON.stringify(feed, null, 2);
@@ -421,6 +438,8 @@ export function feedToJSON(text: string, maximumItems: number = -1) {
 
     let { channel, items } = feedHandler;
 
+    let simpleChannelTitle = simplifyTitle(channel.title);
+
     // Create jsonfeed from the extracted data
     let jsonfeed = {
         version : "https://jsonfeed.org/version/1",
@@ -432,13 +451,17 @@ export function feedToJSON(text: string, maximumItems: number = -1) {
         items: items.map(item => {
 
             let date_published = undefined;
+            let yyyy_mm_dd = undefined;
             try {
                 date_published = new Date(item.pubDate).toISOString();
+                yyyy_mm_dd = date_published.substring(0, "yyyy-mm-dd".length);
             } catch (e) {
             }
 
             let attachments = undefined;
             if (item.enclosure) {
+                let title = `${simpleChannelTitle} - ${yyyy_mm_dd} ${item.title}`;
+
                 let duration_in_seconds = undefined;
                 if (item.duration !== undefined) {
                     duration_in_seconds = secondsFromDuration(item.duration);
@@ -450,6 +473,7 @@ export function feedToJSON(text: string, maximumItems: number = -1) {
                         size_in_bytes: item.enclosure.length,
                         mime_type: item.enclosure.type,
                         duration_in_seconds,
+                        title,
                     }
                 ];
             }
@@ -470,5 +494,4 @@ export function feedToJSON(text: string, maximumItems: number = -1) {
     };
 
     return JSON.stringify(jsonfeed, null, 2);
-    // return JSON.stringify({ channel: feedHandler.channel, items: feedHandler.items }, null, 2);
 }
