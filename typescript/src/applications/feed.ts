@@ -6,6 +6,10 @@
 // The parser pulls data from RSS and iTunes tags to get data about podcasts.
 // It handles both HTML and CDATA properties and removes the HTML from all of them
 // to produce plain text.
+// It produces JSONFeed data.
+// It names the attachment from the title of the podcast and the date and name of the episode.
+// 
+// 
 //
 // "feedToJSON(string) : string" converts an RSS feed string to JSON
 
@@ -86,14 +90,16 @@ class LandmarksText {
 // Assumes whitespace should be normalized
 // Does a small amount of tag->whitespace adjustment
 // e.g. p, br, hr all produce \n
-class MarkupRemover extends BaseHandler {
+class Gleaner extends BaseHandler {
     text: LandmarksText;
+    audio: string[];
 
     private elements: Element[] = [];
 
     constructor() {
         super();
         this.text = new LandmarksText("");
+        this.audio = [];
     }
 
     closeTag() {
@@ -141,6 +147,11 @@ class MarkupRemover extends BaseHandler {
     StartTagAttribute(document: string, attribute: LandmarksAttribute) {
         const e = this.current()!;
         const qn = attribute.getQualifiedName(document);
+
+        // TODO - currently only retrieving basics
+        if (e.localName === "audio" && qn.localName === "src") {
+            this.audio.push(attribute.value.getDecodedText(document));
+        }
     }
 
     StartTag(document: string, tag: LandmarksStartTag) {
@@ -168,13 +179,18 @@ class MarkupRemover extends BaseHandler {
     }
 }
 
+function gleanFromMarkup(text: string, policy: LandmarksPolicy = html5) {
+    const parser = LandmarksParser(policy);
+    const handler = new Gleaner();
+    parser.parse(text, handler);
+    return { text: handler.text.trimmed, audio: handler.audio };
+}
+
 // Removes markup, if any, and returns a trimmed version of the text
 function removeMarkup(text: string, policy: LandmarksPolicy = html5) {
-    const parser = LandmarksParser(policy);
-    const handler = new MarkupRemover();
-    parser.parse(text, handler);
-    return handler.text.trimmed;
+    return gleanFromMarkup(text, policy).text;
 }
+
 
 type Item = any;
 type Channel = { sent: boolean, data: any };
@@ -392,7 +408,21 @@ export function feedToJSON(text: string, maximumItems: number = -1) {
 
                 feed.items = feed.items.map((item: any) => {
                     if (item.content_text === undefined && item.content_html !== undefined) {
-                        item.content_text = removeMarkup(item.content_html);
+                        // TODO - make this better!
+                        let b = gleanFromMarkup(item.content_html);
+                        item.content_text = b.text;
+                        if ((item.attachments === undefined) || (item.attachments.length === 0)) {
+                            for (let a of b.audio) {
+                                if (a.endsWith(".mp3")) {
+                                    if (item.attachments === undefined) {
+                                        item.attachments = [];
+                                    }
+                                    let url = a;
+                                    let type = "audio/mpeg";
+                                    item.attachments.push({ url, type });
+                                }
+                            }
+                        }
                     }
 
                     if (item.date_published === undefined && item.date_modified !== undefined) {
