@@ -8,9 +8,6 @@
 // to produce plain text.
 // It produces JSONFeed data.
 // It names the attachment from the title of the podcast and the date and name of the episode.
-// 
-// 
-//
 // "feedToJSON(string) : string" converts an RSS feed string to JSON
 
 import { LandmarksHandler, BaseHandler } from "../landmarks-handler.js"

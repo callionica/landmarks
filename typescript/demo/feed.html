@@ -9,6 +9,8 @@
 	<script type="module">
 		import { feedToJSON } from "../js/applications/feed.js";
 
+		let missing = 'data:image/svg+xml;utf8,<svg viewBox="0 0 250 250" xmlns="http://www.w3.org/2000/svg"><rect fill="rgb(118,108,29)" x="0" width="250" height="250" rx="15" /></svg>';
+
 		const cache = {};
 
 		const limit = undefined;
@@ -161,7 +163,7 @@
 			e.querySelector(".episodes").innerText = `${items.length} items`;
 			e.querySelector(".schedule").innerText = sch;
 			e.querySelector(".duration").innerText = (averageDuration > 0) ? formatHumanDuration(humanDuration) : "";
-			e.querySelector(".image").src = channel.icon;
+			e.querySelector(".image").src = channel.icon || missing;
 
 			return e;
 		}
@@ -194,7 +196,8 @@
 			e.querySelector(".date").innerText = `${formatHumanDate(date)}`;
 			e.querySelector(".duration").innerText = ((d > 0) && `${formatHumanDuration(duration)}`) || "";
 			e.querySelector(".subtitle").innerText = item.summary || item.content_text;
-			e.querySelector(".image").src = item.image || channel.icon;
+			
+			e.querySelector(".image").src = item.image || channel.icon || missing;
 
 			if (item.attachments) {
 				let a = e.querySelector(".audio");
