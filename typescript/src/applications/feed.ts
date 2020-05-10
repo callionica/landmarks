@@ -411,7 +411,7 @@ export function feedToJSON(text: string, maximumItems: number = -1) {
         title: channel.title,
         description: channel.subtitle || channel.description,
         home_page_url: channel.link,
-        image: channel.image,
+        icon: channel.image,
         items: items.map(item => {
 
             let date_published = undefined;

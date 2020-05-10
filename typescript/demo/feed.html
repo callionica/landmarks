@@ -149,8 +149,8 @@
 			let dates = items.slice(0, 20).map(item => new Date(item.date_published));
 			let sch = schedule(dates);
 
-			let durations = items.slice(0, 20).map(item => item.attachments[0].duration_in_seconds);
-			let averageDuration = durations.reduce((a,b) => (a+b)) / durations.length;
+			let durations = items.slice(0, 20).map(item => item.attachments && item.attachments[0].duration_in_seconds);
+			let averageDuration = durations.reduce((a,b) => (a+b), 0) / durations.length;
 			let humanDuration = humanDurationFromSeconds(averageDuration);
 
 			let e = document.createElement("div");
@@ -161,7 +161,7 @@
 			e.querySelector(".episodes").innerText = `${items.length} eps`;
 			e.querySelector(".schedule").innerText = sch;
 			e.querySelector(".duration").innerText = formatHumanDuration(humanDuration);
-			e.querySelector(".image").src = channel.image;
+			e.querySelector(".image").src = channel.icon;
 
 			return e;
 		}
@@ -183,7 +183,7 @@
 			let date = new Date(item.date_published);
 			let dateYYYMMDD = simplifyDate(item.date_published);
 			let podcast = simplifyPodcast(channel.title);
-			let duration = humanDurationFromSeconds(item.attachments[0].duration_in_seconds);
+			let duration = humanDurationFromSeconds(item.attachments ? item.attachments[0].duration_in_seconds : 0);
 
 			let e = document.createElement("div");
 			e.className = "item";
@@ -193,11 +193,13 @@
 			e.querySelector(".date").innerText = `${formatHumanDate(date)}`;
 			e.querySelector(".duration").innerText = `${formatHumanDuration(duration)}`;
 			e.querySelector(".subtitle").innerText = item.summary;
-			e.querySelector(".image").src = item.image || channel.image;
+			e.querySelector(".image").src = item.image || channel.icon;
 
-			let a = e.querySelector(".audio");
-			a.href = item.attachments[0].url;
-			a.download = `${podcast} - ${dateYYYMMDD} ${title}`;
+			if (item.attachments) {
+				let a = e.querySelector(".audio");
+				a.href = item.attachments[0].url;
+				a.download = `${podcast} - ${dateYYYMMDD} ${title}`;
+			}
 
 			return e;
 		}
