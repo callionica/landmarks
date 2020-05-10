@@ -75,11 +75,17 @@ class LandmarksText {
 
     // Appends a line break \n
     appendBreak() {
-        if (last(this.trailingWhitespace) === "\n") {
+        if (this.text.length <= 0) {
+            return;
+        }
+
+        this.trailingWhitespace = "\n";
+
+        /*if (last(this.trailingWhitespace) === "\n") {
             this.trailingWhitespace += "\n";
         } else {
             this.trailingWhitespace = "\n";
-        }
+        }*/
     }
 }
 
@@ -132,7 +138,11 @@ class Gleaner extends BaseHandler {
     }
 
     Text(document: string, range: LandmarksRange) {
-        this.text.append(range.getDecodedText(document));
+        const e = this.current();
+        const visible = (e === undefined) || ["p", "span", "div", "b", "i", "u", "strong", "em", "a", "h1", "h2", "h3", "h4", "tr", "td", "pre"].includes(e.localName);
+        if (visible) {
+            this.text.append(range.getDecodedText(document));
+        }
     }
 
     StartTagPrefix(document: string, tag: LandmarksStartTagPrefix) {
