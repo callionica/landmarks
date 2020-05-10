@@ -139,7 +139,7 @@
 			<div>
 			<div class="content">
 			<p class="subtitle"></p>
-			<p class="details"><span class="episodes"></span> • <span class="schedule"></span> • <span class="duration"></span></p>
+			<p class="details"><span class="episodes"></span> • <span class="schedule"></span><span class="duration"></span></p>
 			</div>
 			<img class="image">
 			</div>
@@ -156,11 +156,11 @@
 			let e = document.createElement("div");
 			e.className = "channel";
 			e.innerHTML = t;
-			e.querySelector(".title").innerText = channel.title;
-			e.querySelector(".subtitle").innerText = channel.description;
-			e.querySelector(".episodes").innerText = `${items.length} eps`;
+			e.querySelector(".title").innerText = channel.title || "";
+			e.querySelector(".subtitle").innerText = channel.description || (channel.author && channel.author.name) || "";
+			e.querySelector(".episodes").innerText = `${items.length} items`;
 			e.querySelector(".schedule").innerText = sch;
-			e.querySelector(".duration").innerText = formatHumanDuration(humanDuration);
+			e.querySelector(".duration").innerText = (averageDuration > 0) ? formatHumanDuration(humanDuration) : "";
 			e.querySelector(".image").src = channel.icon;
 
 			return e;
@@ -174,7 +174,7 @@
 <img class="image" style="">
 <div class="content">
 <p class="subtitle"></p>
-<p class="details"><span class="date"></span> • <span class="duration"></span></p>
+<p class="details"><span class="date"></span><span class="duration"></span></p>
 </div>
 </div>
 </a>
@@ -183,15 +183,16 @@
 			let date = new Date(item.date_published);
 			let dateYYYMMDD = simplifyDate(item.date_published);
 			let podcast = simplifyPodcast(channel.title);
-			let duration = humanDurationFromSeconds(item.attachments ? item.attachments[0].duration_in_seconds : 0);
+			let d = item.attachments ? item.attachments[0].duration_in_seconds : 0;
+			let duration = humanDurationFromSeconds(d);
 
 			let e = document.createElement("div");
 			e.className = "item";
 			e.innerHTML = t;
 			let title = item.title;
-			e.querySelector(".title").innerText = title;
+			e.querySelector(".title").innerText = title || "";
 			e.querySelector(".date").innerText = `${formatHumanDate(date)}`;
-			e.querySelector(".duration").innerText = `${formatHumanDuration(duration)}`;
+			e.querySelector(".duration").innerText = ((d > 0) && `${formatHumanDuration(duration)}`) || "";
 			e.querySelector(".subtitle").innerText = item.summary || item.content_text;
 			e.querySelector(".image").src = item.image || channel.icon;
 
@@ -444,6 +445,10 @@
 		.details {
 			color: var(--ink-3);
 			padding-top: calc(2 * var(--adjustment, 0)); /* Visual adjust to counter .content's adjustment */
+		}
+
+		.duration:not(:empty)::before {
+			content: ' • ';
 		}
 
 		.subtitle {
