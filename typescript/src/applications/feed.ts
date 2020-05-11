@@ -504,7 +504,7 @@ export function feedToJSON(text: string, maximumItems: number = -1) {
             }
 
             let attachments : JSONFeedAttachment[] | undefined = undefined;
-            if (item.enclosure) {
+            if (item.enclosure && item.enclosure.url) {
                 let title = `${simpleChannelTitle} - ${yyyy_mm_dd} ${item.title}`;
 
                 let duration_in_seconds: number | undefined = undefined;

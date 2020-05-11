@@ -210,7 +210,7 @@
 				e.classList.add("no-image");
 			}
 
-			if (item.attachments) {
+			if (item.attachments && item.attachments.length > 0) {
 				let a = e.querySelector(".audio");
 				a.href = item.attachments[0].url;
 				a.download = item.attachments[0].title;
