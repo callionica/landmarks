@@ -12,18 +12,7 @@
 	if (window.storeRead !== undefined) {
 		const _fetch_ = window.fetch;
 		localFetch = async function localFetch(url) {
-			let result = await storeRead(url);
-			
-			let ms = 1;
-			let s = 1000*ms;
-			let m = 60*s;
-			let h = 60*m;
-			let day = 24*h;
-
-			let date = new Date(result.retrievalDate);
-			if (Date.now() - date > (1 * day)) {
-				result = await storeFetch(url);
-			}
+			let result = await storeRead(url, { hours: 1 });
 			let localURL = document.origin + result.path;
 			return await _fetch_(localURL);
 		};
