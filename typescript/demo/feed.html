@@ -8,13 +8,14 @@
 	<meta name='viewport' content='width=device-width, initial-scale=1'>
 	<script type="module">
 
-	if (window.fetchStore && document.origin.startsWith("file-system:")) {
-		const _fetch_ = fetch;
-		async function fetch(url) {
+	let localFetch = window.fetch;
+	if (window.fetchStore !== undefined) {
+		const _fetch_ = window.fetch;
+		localFetch = async function localFetch(url) {
 			let result = await fetchStore(url);
 			let localURL = document.origin + result.path;
 			return await _fetch_(localURL);
-		}
+		};
 	}
 
 		import { feedToJSON } from "../js/applications/feed.js";
@@ -351,7 +352,7 @@
 					return;
 				}
 
-				fetch(url).then(response => {
+				localFetch(url).then(response => {
 					return response.text();
 				}).then(data => {
 					cache[url] = data;
@@ -533,7 +534,7 @@
 
 	<select id="feeds">
 		<option value="/Users/user/Downloads/rss-2.rss">Rel file</option>
-		<option value="web-system://atp.fm/episodes?format=rss">WSATP - Accidental Tech Podcast</option>
+		<option value="web://atp.fm/episodes?format=rss">WSATP - Accidental Tech Podcast</option>
 		<option value="https://atp.fm/episodes?format=rss">HTTPS - Accidental Tech Podcast</option>
 		<option value="http://scriptnotes.libsyn.com/rss">Scriptnotes</option>
 		<option value="https://rss.acast.com/historyextra" selected>History Extra</option>
