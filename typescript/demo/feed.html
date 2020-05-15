@@ -7,6 +7,16 @@
 	<title>Landmarks Parser - Podcast Viewer</title>
 	<meta name='viewport' content='width=device-width, initial-scale=1'>
 	<script type="module">
+
+	if (window.fetchStore && document.origin.startsWith("file-system:")) {
+		const _fetch_ = fetch;
+		async function fetch(url) {
+			let result = await fetchStore(url);
+			let localURL = document.origin + result.path;
+			return await _fetch_(localURL);
+		}
+	}
+
 		import { feedToJSON } from "../js/applications/feed.js";
 
 		let missing = 'data:image/svg+xml;utf8,<svg viewBox="0 0 250 250" xmlns="http://www.w3.org/2000/svg"><rect fill="rgb(118,108,29)" x="0" width="250" height="250" rx="15" /></svg>';
@@ -341,7 +351,9 @@
 					return;
 				}
 
-				fetch(url).then(response => response.text()).then(data => {
+				fetch(url).then(response => {
+					return response.text();
+				}).then(data => {
 					cache[url] = data;
 					// localStorage.setItem(url, data);
 					document.getElementById("input").value = data;
@@ -520,7 +532,9 @@
 	<p style="margin-bottom: var(--margin);">Pick a podcast,<!-- enter a feed,--> or drop a podcast feed file on the page.</p>
 
 	<select id="feeds">
-		<!--<option value="https://atp.fm/episodes?format=rss">ATP - Accidental Tech Podcast</option>-->
+		<option value="/Users/user/Downloads/rss-2.rss">Rel file</option>
+		<option value="web-system://atp.fm/episodes?format=rss">WSATP - Accidental Tech Podcast</option>
+		<option value="https://atp.fm/episodes?format=rss">HTTPS - Accidental Tech Podcast</option>
 		<option value="http://scriptnotes.libsyn.com/rss">Scriptnotes</option>
 		<option value="https://rss.acast.com/historyextra" selected>History Extra</option>
 		<!--<option value="https://daringfireball.net/thetalkshow/rss">Daring Fireball</option>-->
@@ -535,6 +549,8 @@
 		<!--<option value="https://www.theunnamedpodcast.com/feed.json">Unnamed</option>-->
 
 	</select>
+	
+	<a href="web-system://atp.fm/episodes?format=rss">WSATP - Accidental Tech Podcast</a>
 
 	<textarea id="input" title="Feed" style="width:100%; height: 120px;">
 	<?xml version="1.0" encoding="UTF-8"?>
