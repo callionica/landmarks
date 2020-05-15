@@ -9,10 +9,21 @@
 	<script type="module">
 
 	let localFetch = window.fetch;
-	if (window.fetchStore !== undefined) {
+	if (window.storeRead !== undefined) {
 		const _fetch_ = window.fetch;
 		localFetch = async function localFetch(url) {
-			let result = await fetchStore(url);
+			let result = await storeRead(url);
+			
+			let ms = 1;
+			let s = 1000*ms;
+			let m = 60*s;
+			let h = 60*m;
+			let day = 24*h;
+
+			let date = new Date(result.retrievalDate);
+			if (Date.now() - date > (1 * day)) {
+				result = await storeFetch(url);
+			}
 			let localURL = document.origin + result.path;
 			return await _fetch_(localURL);
 		};
@@ -534,13 +545,13 @@
 
 	<select id="feeds">
 		<option value="/Users/user/Downloads/rss-2.rss">Rel file</option>
-		<option value="web://atp.fm/episodes?format=rss">WSATP - Accidental Tech Podcast</option>
+		<option value="web://atp.fm/episodes?format=rss">Web - Accidental Tech Podcast</option>
 		<option value="https://atp.fm/episodes?format=rss">HTTPS - Accidental Tech Podcast</option>
 		<option value="http://scriptnotes.libsyn.com/rss">Scriptnotes</option>
 		<option value="https://rss.acast.com/historyextra" selected>History Extra</option>
-		<!--<option value="https://daringfireball.net/thetalkshow/rss">Daring Fireball</option>-->
+		<option value="https://daringfireball.net/thetalkshow/rss">The Talk Show with John Gruber</option>
 		<option value="https://podcasts.files.bbci.co.uk/p04sj2pt.rss">Intrigue</option>
-		<!--<option value="http://feeds.feedburner.com/dancarlin/history?format=xml">Hardcore History</option>-->
+		<option value="http://feeds.feedburner.com/dancarlin/history?format=xml">Hardcore History</option>
 		<option value="https://podcasts.files.bbci.co.uk/p02pc9qx.rss">Seriously...</option>
 		<option value="https://feeds.megaphone.fm/lore">Lore</option>
 		<option value="http://feeds.megaphone.fm/BKS3925808083">Back Story</option>
