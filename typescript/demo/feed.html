@@ -13,7 +13,7 @@
 		const _fetch_ = window.fetch;
 		localFetch = async function localFetch(url) {
 			let result = await storeRead(url, { hours: 1 });
-			let localURL = document.origin + result.path;
+			let localURL = `${document.origin}/file/_/` + result.path;
 			return await _fetch_(localURL);
 		};
 	}
