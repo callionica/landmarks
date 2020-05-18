@@ -8,6 +8,10 @@
 	<meta name='viewport' content='width=device-width, initial-scale=1'>
 	<script type="module">
 
+	if  (window.wrapURL === undefined) {
+		window.wrapURL = function wrapURL(x) { return x; };
+	}
+
 	let localFetch = window.fetch;
 	if (window.storeRead !== undefined) {
 		const _fetch_ = window.fetch;
@@ -177,7 +181,7 @@
 			e.querySelector(".duration").innerText = (averageDuration > 0) ? formatHumanDuration(humanDuration) : "";
 
 			let image = channel.icon;
-			e.querySelector(".image").src = image || missing;
+			e.querySelector(".image").src = wrapURL(image, "store") || missing;
 
 			if (image === undefined) {
 				e.classList.add("no-image");
@@ -215,7 +219,7 @@
 			e.querySelector(".duration").innerText = ((d > 0) && `${formatHumanDuration(duration)}`) || "";
 			e.querySelector(".subtitle").innerText = item.summary || item.content_text;
 			
-			let image = item.image || channel.icon;
+			let image = wrapURL(item.image || channel.icon, "store");
 			e.querySelector(".image").src = image || missing;
 
 			if (image === undefined) {
@@ -532,11 +536,12 @@
 <body>
 	<h1>LANDMARKS PODCAST VIEWER</h1>
 	<p style="margin-bottom: var(--margin);">Pick a podcast,<!-- enter a feed,--> or drop a podcast feed file on the page.</p>
-
+<!--<img src="https://images.megaphone.fm/QvvDWdDdTxyewQX_WYDv2a3mD4Q-NwnX5fACNlHFB1M/plain/s3:/megaphone-prod/podcasts/d962c918-1910-11e9-a4bb-37a216092b36/image/uploads_2F1549659658364-xo8jgn0lycn-42c64fc1380653604d4456c124b28f1f_2FFamilySecrets-Logo-iHR-Final-3000x3000.png">-->
 	<select id="feeds">
 		<option value="/Users/user/Downloads/rss-2.rss">Rel file</option>
 		<option value="app://callionica.com/https/atp.fm/episodes?format=rss">App - Accidental Tech Podcast</option>
 		<option value="https://atp.fm/episodes?format=rss">HTTPS - Accidental Tech Podcast</option>
+		<option value="https://feeds.megaphone.fm/HSW1554643165">Family Secrets</option>
 		<option value="http://scriptnotes.libsyn.com/rss">Scriptnotes</option>
 		<option value="https://rss.acast.com/historyextra" selected>History Extra</option>
 		<option value="https://daringfireball.net/thetalkshow/rss">The Talk Show with John Gruber</option>
