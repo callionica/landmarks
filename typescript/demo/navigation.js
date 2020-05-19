@@ -230,11 +230,15 @@ function init() {
 		var handled = false;
 
 		if (evt.key === "ArrowDown") {
-			handled = true;
-			focus("forward");
+			if (!evt.getModifierState("Meta")) {
+				handled = true;
+				focus("forward");
+			}
 		} else if (evt.key === "ArrowUp") {
-			handled = true;
-			focus("back");
+			if (!evt.getModifierState("Meta")) {
+				handled = true;
+				focus("back");
+			}
 		} else if (evt.key === "Backspace") {
 			window.history.back();
 			handled = true;
