@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
 	<meta charset='utf-8'>
+	<meta name='viewport' content='width=device-width, initial-scale=1.0'>
 	<meta http-equiv='X-UA-Compatible' content='IE=edge'>
 	<title>Landmarks Parser - Podcast Viewer</title>
-	<meta name='viewport' content='width=device-width, initial-scale=1'>
+	<script src="navigation.js"></script>
 	<script type="module">
 
 	if  (window.wrapURL === undefined) {
@@ -375,8 +375,15 @@
 		ready(document, init);
 	</script>
 	<style>
-		* {
+		html {
 			box-sizing: border-box;
+		}
+
+		*, *:before, *:after {
+			box-sizing: inherit;
+		}
+
+		* {
 			margin: 0;
 			padding: 0;
 		}
@@ -510,12 +517,16 @@
 			padding-bottom: 3vw;
 		}
 
-		.item:hover {
+		.item[data-selected] {
 			background-color: var(--brown);
 			color: var(--ink);
 			--ink: whitesmoke;
 			--ink-2: hsl(0, 0%, 91%);
 			--ink-3: hsl(0, 0%, 80%);
+		}
+
+		a:focus {
+			outline: none;
 		}
 
 		.audio {
