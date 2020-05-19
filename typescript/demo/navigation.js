@@ -183,7 +183,18 @@ function focusByPrefix(prefix) {
 		return other.startsWith(lower);
 	});
 	if (!nextElement) {
-		nextElement = targets.find(t => getText(t).includes(lower));
+		let selectors = [".title", ".content"];
+		for (let selector of selectors) {
+			nextElement = targets.find(t => {
+				let subTarget = t.querySelector(selector);
+				if (subTarget) {
+					return getText(subTarget).includes(lower);
+				}
+			});
+			if (nextElement) {
+				break;
+			}
+		}
 	}
 	if (nextElement) {
 		moveFocusTo(nextElement);
