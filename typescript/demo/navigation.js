@@ -159,16 +159,19 @@ function simpleTitle(text) {
 function moveFocusTo(e) {
 	e.focus();
 	const attr = "data-selected";
-	let p = document.querySelector(`*[${attr}]`);
-	if (p) {
-		p.removeAttribute(attr);
-	}
-	e.parentNode.setAttribute(attr, "true");
+		let p = document.querySelector(`*[${attr}]`);
+		if (p) {
+			p.removeAttribute(attr);
+		}
 	e.parentNode.scrollIntoView({
 		behavior: "smooth",
 		block: "center",
 		inline: "start",
-	  });
+	});
+
+	setTimeout(() => {
+		e.parentNode.setAttribute(attr, "true");
+	}, 0.1 * 1000);
 }
 
 /*
@@ -177,7 +180,7 @@ Focus the first A whose text starts with the specified prefix, otherwise the fir
 function focusByPrefix(prefix) {
 
 	function getText(a) {
-		return a.innerText.trim().toLowerCase();
+		return a.textContent.trim().toLowerCase();
 	}
 
 	var lower = prefix.toLowerCase();
@@ -219,14 +222,16 @@ function init() {
 	var searchPrefix = "";
 	var searchConsumesSpace = false;
 	var searchTimeout;
+	var searchExecuteTimeout;
 
 	function addToSearch(letter) {
 		searchPrefix += letter;
 		searchConsumesSpace = true;
+
+		clearTimeout(searchExecuteTimeout);
+		searchExecuteTimeout = setTimeout(()=> { focusByPrefix(searchPrefix); }, 0.25 * 1000);
+
 		clearTimeout(searchTimeout);
-
-		focusByPrefix(searchPrefix);
-
 		searchTimeout = setTimeout(()=> { searchPrefix = ""; searchConsumesSpace = false; }, 0.5 * 1000);
 	}
 
