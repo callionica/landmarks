@@ -158,12 +158,17 @@ function simpleTitle(text) {
 
 function moveFocusTo(e) {
 	e.focus();
-	let p = document.querySelector("*[data-selected]");
+	const attr = "data-selected";
+	let p = document.querySelector(`*[${attr}]`);
 	if (p) {
-		p.removeAttribute("data-selected");
+		p.removeAttribute(attr);
 	}
-	e.parentNode.setAttribute("data-selected", "true");
-	e.parentNode.scrollIntoView();
+	e.parentNode.setAttribute(attr, "true");
+	e.parentNode.scrollIntoView({
+		behavior: "smooth",
+		block: "center",
+		inline: "start",
+	  });
 }
 
 /*
