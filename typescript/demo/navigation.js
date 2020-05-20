@@ -107,12 +107,16 @@ function updateLatestLink() {
 	}
 }
 
+function getTargets() {
+	return [...document.querySelectorAll("a.audio")];
+}
+
 function activeElement() {
 	// The activeElement is one of these:
 	// 1. The focused A link
 	// 2. The latest link
 	// 3. The first A link
-	var targets = [...document.querySelectorAll("a")];
+	var targets = getTargets();
 
 	var currentElement = document.activeElement;
 	if (currentElement) {	
@@ -130,19 +134,23 @@ function activeElement() {
 }
 
 function focus(direction) {
-	var next = (direction === "forward");
-	var nextElement = document.querySelector("a");
-	var currentElement = activeElement();
-	if (currentElement) {
-		var targets = [...document.querySelectorAll("a")];
-		var index = targets.indexOf(currentElement);
-		if (index < targets.length) {
-			if ((index == 0) && !next) {
-				index = targets.length;
-			} else if ((index == targets.length - 1) && next) {
-				index = -1;
+	
+	var targets = getTargets();
+	var nextElement = (direction === "last") ? targets[targets.length - 1] : targets[0];
+
+	if (["forward", "back"].includes(direction)) {
+		var next = (direction === "forward");
+		var currentElement = activeElement();
+		if (currentElement) {
+			var index = targets.indexOf(currentElement);
+			if (index < targets.length) {
+				if ((index == 0) && !next) {
+					index = targets.length;
+				} else if ((index == targets.length - 1) && next) {
+					index = -1;
+				}
+				nextElement = targets[next ? (index + 1) : (index - 1)];
 			}
-			nextElement = targets[next ? (index + 1) : (index - 1)];
 		}
 	}
 
@@ -155,6 +163,8 @@ function focus(direction) {
 function simpleTitle(text) {
 	return text.replace(/^((the)|(an?)|(l[aeo]s?)|(une?))\s+(.*)$/si, "$6");
 }
+
+var selectTimeout;
 
 function moveFocusTo(e) {
 	e.focus();
@@ -169,7 +179,8 @@ function moveFocusTo(e) {
 		inline: "start",
 	});
 
-	setTimeout(() => {
+	clearTimeout(selectTimeout);
+	selectTimeout = setTimeout(() => {
 		e.parentNode.setAttribute(attr, "true");
 	}, 0.1 * 1000);
 }
@@ -184,7 +195,7 @@ function focusByPrefix(prefix) {
 	}
 
 	var lower = prefix.toLowerCase();
-	var targets = [...document.querySelectorAll("a")];
+	var targets = getTargets();
 	var nextElement = targets.find(t => {
 		let o = getText(t);
 		let other = simpleTitle(o);
@@ -214,7 +225,7 @@ function init() {
 	if (latestLink) {
 		moveFocusTo(latestLink);
 	} else {
-		var targets = [...document.querySelectorAll("a")];
+		var targets = getTargets();
 		moveFocusTo(targets[0]);
 	}
 	window.setInterval(updateLatestLink, 1 * 1000); // polling local storage every second
@@ -241,14 +252,18 @@ function init() {
 
 		if (evt.key === "ArrowDown") {
 			if (!evt.getModifierState("Meta")) {
-				handled = true;
 				focus("forward");
+			} else {
+				focus("last");
 			}
+			handled = true;
 		} else if (evt.key === "ArrowUp") {
 			if (!evt.getModifierState("Meta")) {
-				handled = true;
 				focus("back");
+			} else {
+				focus("first");
 			}
+			handled = true;
 		} else if (evt.key === "Backspace") {
 			window.history.back();
 			handled = true;
