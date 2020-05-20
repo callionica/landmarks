@@ -213,6 +213,8 @@
 			let e = document.createElement("div");
 			e.className = "item";
 			e.innerHTML = t;
+			e.id = item.id;
+
 			let title = item.title;
 			e.querySelector(".title").innerText = title || "";
 			e.querySelector(".date").innerText = `${formatHumanDate(date)}`;
@@ -541,10 +543,16 @@
 		#input {
 			display: none;
 		}
+
+		video {
+			width: 100%;
+			height: 3vw;
+		}
 	</style>
 </head>
 
 <body>
+	<video controls></video>
 	<h1>LANDMARKS PODCAST VIEWER</h1>
 	<p style="margin-bottom: var(--margin);">Pick a podcast,<!-- enter a feed,--> or drop a podcast feed file on the page.</p>
 <!--<img src="https://images.megaphone.fm/QvvDWdDdTxyewQX_WYDv2a3mD4Q-NwnX5fACNlHFB1M/plain/s3:/megaphone-prod/podcasts/d962c918-1910-11e9-a4bb-37a216092b36/image/uploads_2F1549659658364-xo8jgn0lycn-42c64fc1380653604d4456c124b28f1f_2FFamilySecrets-Logo-iHR-Final-3000x3000.png">-->

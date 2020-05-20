@@ -37,8 +37,10 @@ function getLatest() {
 	return JSON.parse(latest);
 }
 
+// Return the A link target where the href matches the URL
+// unless we want the next element
 function getA(url, next) {
-	var collection = [...document.querySelectorAll("a")];
+	var collection = getTargets();
 	var result;
 	var now = false;
 	collection.some(a => {
@@ -131,6 +133,16 @@ function activeElement() {
 	}
 
 	return targets[0];
+}
+
+function activate() {
+	let e = activeElement();
+	if (e) {
+		let video = document.querySelector("video");
+		video.src = e.href;
+		video.play();
+		// e.click();
+	}
 }
 
 function focus(direction) {
@@ -267,18 +279,20 @@ function init() {
 		} else if (evt.key === "Backspace") {
 			window.history.back();
 			handled = true;
-		} else if (evt.keyCode == 32) { // SPACE
+		} else if (evt.keyCode == 32 || evt.key === "Enter") { // SPACE
 			if (searchConsumesSpace) {
 				handled = true;
 				addToSearch(" ");
 			}
 			// Click on the currently active element
 			else {
-				var e = activeElement();
+				activate();
+				handled = true;
+				/*var e = activeElement();
 				if (e) {
 					handled = true;
 					e.click();
-				}
+				}*/
 			}
 		} else if ((!evt.getModifierState("Meta") && !evt.getModifierState("Control")) && (((65 <= evt.keyCode) && (evt.keyCode < 65+26)) || ((48 <= evt.keyCode) && (evt.keyCode < 48+10)))) {
 			var letter = String.fromCharCode(evt.keyCode); // works in this range
