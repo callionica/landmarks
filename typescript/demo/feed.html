@@ -262,6 +262,29 @@
 			}
 		}
 
+		function click(evt) {
+			console.log(evt);
+			
+			let href;
+			let e = evt.srcElement;
+			while (e && e != document.body) {
+				if (e.href) {
+					href = e.href;
+					break;
+				}
+				e = e.parentElement;
+			}
+
+			if (href) {
+				let video = document.querySelector("video");
+				video.src = href;
+				video.play();
+
+				evt.stopPropagation();
+				evt.preventDefault();
+			}
+		}
+
 		function init() {
 			function convert(cacheByChannel) {
 
@@ -377,6 +400,8 @@
 			convert();
 
 			document.getElementById("input").oninput = convert;
+
+			document.onclick = click;
 		}
 
 		ready(document, init);

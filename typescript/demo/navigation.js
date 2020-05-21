@@ -138,10 +138,7 @@ function activeElement() {
 function activate() {
 	let e = activeElement();
 	if (e) {
-		let video = document.querySelector("video");
-		video.src = e.href;
-		video.play();
-		// e.click();
+		e.click();
 	}
 }
 
