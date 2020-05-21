@@ -271,6 +271,7 @@ function init() {
 				focus("back");
 			} else {
 				focus("first");
+				window.scrollTo(0,0);
 			}
 			handled = true;
 		} else if (evt.key === "Backspace") {

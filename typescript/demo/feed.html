@@ -8,7 +8,7 @@
 	<script src="navigation.js"></script>
 	<script type="module">
 
-	if  (window.wrapURL === undefined) {
+	if (window.wrapURL === undefined) {
 		window.wrapURL = function wrapURL(x) { return x; };
 	}
 
@@ -333,6 +333,7 @@
 				if (getTargets) {
 					var targets = getTargets();
 					moveFocusTo(targets[0]);
+					window.scrollTo(0,0);
 				}
 			}
 
