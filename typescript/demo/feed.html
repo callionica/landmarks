@@ -306,6 +306,11 @@
 					option.innerText = title;
 					document.getElementById("feeds").append(option);
 				}
+
+				if (getTargets) {
+					var targets = getTargets();
+					moveFocusTo(targets[0]);
+				}
 			}
 
 			function initFileDrop() {
@@ -546,10 +551,11 @@
 
 		video {
 			position: fixed;
-			width: 96%;
+			width: 96vw;
 			height: 8vw;
 			padding: 0;
 			margin: 0;
+			background-color: var(--paper);
 		}
 		.spacer {
 			height: 8vw;
