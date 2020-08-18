@@ -115,15 +115,23 @@ class LandmarksMarkup {
 
 function nameColor(color: string) : string {
 
-    const colors : { [index: string]: string | undefined; } = {
-        "#FFFFFF" : "white",
-        "#000000" : "black",
-        "#FFFF00" : "yellow",
-        "#FF00FF" : "magenta",
-        "#00FFFF" : "cyan",
-        "#FF0000" : "red",
-        "#00FF00" : "green",
-        "#0000FF" : "blue",
+    const colors: { [index: string]: string | undefined; } = {
+        "#FFFFFF": "white",
+        "#FFFFFFFF": "white",
+        "#000000": "black",
+        "#000000FF": "black",
+        "#FFFF00": "yellow",
+        "#FFFF00FF": "yellow",
+        "#FF00FF": "magenta",
+        "#FF00FFFF": "magenta",
+        "#00FFFF": "cyan",
+        "#00FFFFFF": "cyan",
+        "#FF0000": "red",
+        "#FF0000FF": "red",
+        "#00FF00": "green",
+        "#00FF00FF": "green",
+        "#0000FF": "blue",
+        "#0000FFFF": "blue",
     };
 
     const found = colors[color.toUpperCase()];
