@@ -1,7 +1,7 @@
 // A decoder for HTML5 character entities and named entities
 
-import { getEntity } from "./entities.js";
-import { UTF8String, UTF8Byte, UTF8Bytes, UTF8Array, u8 } from "./landmarks-utf8.js"
+import { getEntity } from "./entities.ts";
+import { UTF8String, UTF8Byte, UTF8Bytes, UTF8Array, u8 } from "./landmarks-utf8.ts"
 
 const byte_0: UTF8Byte = u8("0")[0];
 const byte_9: UTF8Byte = u8("9")[0];

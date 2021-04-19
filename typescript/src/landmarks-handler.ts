@@ -1,6 +1,6 @@
 // ALL RIGHTS RESERVED
 
-import { LandmarksAttribute, LandmarksEndTag, LandmarksEndTagPrefix, LandmarksRange, LandmarksStartTag, LandmarksStartTagPrefix, TagID } from "./landmarks-parser-types.js";
+import { LandmarksAttribute, LandmarksEndTag, LandmarksEndTagPrefix, LandmarksRange, LandmarksStartTag, LandmarksStartTagPrefix, TagID } from "./landmarks-parser-types.ts";
 
 export interface LandmarksHandler {
     Text(document: string, range: LandmarksRange): void;

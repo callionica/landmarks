@@ -1,8 +1,8 @@
 // ALL RIGHTS RESERVED
 
-import { LandmarksPosition, npos, LandmarksRange, LandmarksRangeCData, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksStartTag, LandmarksEndTagPrefix, LandmarksEndTag, TagID, UnknownTagID, EndTagState, SelfClosingPolicy, SelfClosingMarker } from "./landmarks-parser-types.js";
-import { LandmarksHandler } from "./landmarks-handler.js"
-import { LandmarksPolicy } from "./landmarks-policy.js"
+import { LandmarksPosition, npos, LandmarksRange, LandmarksRangeCData, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksStartTag, LandmarksEndTagPrefix, LandmarksEndTag, TagID, UnknownTagID, EndTagState, SelfClosingPolicy, SelfClosingMarker } from "./landmarks-parser-types.ts";
+import { LandmarksHandler } from "./landmarks-handler.ts"
+import { LandmarksPolicy } from "./landmarks-policy.ts"
 
 /*
 The space characters, for the purposes of this specification, are U+0020 SPACE, "tab" (U+0009), "LF" (U+000A), "FF" (U+000C), and "CR" (U+000D).

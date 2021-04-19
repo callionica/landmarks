@@ -1,6 +1,6 @@
 // ALL RIGHTS RESERVED
 
-import { TagID, LandmarksPosition, npos } from "./landmarks-parser-types.js";
+import { TagID, LandmarksPosition, npos } from "./landmarks-parser-types.ts";
 
 // An interface that allows you to get help from the compiler when implementing a Policy used by the Parser
 // A Policy controls various aspects of the Parser's behavior for example:

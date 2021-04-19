@@ -28,11 +28,11 @@
 //
 // An interesting document: http://w3c.github.io/ttml-webvtt-mapping/
 
-import { LandmarksHandler, BaseHandler } from "../landmarks-handler.js"
-import { LandmarksRange, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksEndTag, LandmarksStartTag, LandmarksEndTagPrefix, TagID, EndTagState } from "../landmarks-parser-types.js";
-import { LandmarksParser } from "../landmarks-parser.js";
-import { xml } from "../landmarks-policy-ml.js";
-import { encodeEntities } from "../landmarks-entities.js";
+import { LandmarksHandler, BaseHandler } from "../landmarks-handler.ts"
+import { LandmarksRange, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksEndTag, LandmarksStartTag, LandmarksEndTagPrefix, TagID, EndTagState } from "../landmarks-parser-types.ts";
+import { LandmarksParser } from "../landmarks-parser.ts";
+import { xml } from "../landmarks-policy-ml.ts";
+import { encodeEntities } from "../landmarks-entities.ts";
 
 function first(text: string, count: number = 1) {
     return text.substring(0, count);

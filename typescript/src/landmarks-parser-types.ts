@@ -1,6 +1,6 @@
 // ALL RIGHTS RESERVED
 
-import { decodeEntities } from "./landmarks-entities.js";
+import { decodeEntities } from "./landmarks-entities.ts";
 
 export type LandmarksPosition = number;
 

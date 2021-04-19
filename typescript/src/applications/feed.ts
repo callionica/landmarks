@@ -10,12 +10,12 @@
 // It names the attachment from the title of the podcast and the date and name of the episode.
 // "feedToJSON(string) : string" converts an RSS feed string to JSON
 
-import { LandmarksHandler, BaseHandler } from "../landmarks-handler.js"
-import { LandmarksRange, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksEndTag, LandmarksStartTag, LandmarksEndTagPrefix, TagID, EndTagState } from "../landmarks-parser-types.js";
-import { LandmarksParser } from "../landmarks-parser.js";
-import { xml, html5 } from "../landmarks-policy-ml.js";
-import { encodeEntities, decodeEntities } from "../landmarks-entities.js";
-import { LandmarksPolicy } from "../landmarks-policy.js";
+import { LandmarksHandler, BaseHandler } from "../landmarks-handler.ts"
+import { LandmarksRange, LandmarksStartTagPrefix, LandmarksAttribute, LandmarksEndTag, LandmarksStartTag, LandmarksEndTagPrefix, TagID, EndTagState } from "../landmarks-parser-types.ts";
+import { LandmarksParser } from "../landmarks-parser.ts";
+import { xml, html5 } from "../landmarks-policy-ml.ts";
+import { encodeEntities, decodeEntities } from "../landmarks-entities.ts";
+import { LandmarksPolicy } from "../landmarks-policy.ts";
 
 function first(text: string, count: number = 1) {
     return text.substring(0, count);

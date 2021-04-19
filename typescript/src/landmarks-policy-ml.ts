@@ -1,7 +1,7 @@
 // ALL RIGHTS RESERVED
 
-import { LandmarksPolicy, LandmarksPolicyData, Policy } from "./landmarks-policy.js"
-import { LandmarksRange } from "./landmarks-parser-types.js";
+import { LandmarksPolicy, LandmarksPolicyData, Policy } from "./landmarks-policy.ts"
+import { LandmarksRange } from "./landmarks-parser-types.ts";
 
 const spaces = " \t\n\f\r";
 const attributeDelimiters = [
